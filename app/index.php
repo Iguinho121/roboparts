@@ -24,7 +24,7 @@ try {
     </style>
 </head>
 <body>
-    <h1>Projeto Integrador</h1>
+    <h1>Projeto Integrador: RoboParts</h1>
     <p>O ambiente PHP está funcionando.</p>
     <div class="status">
         Banco de dados: <strong><?= htmlspecialchars($databaseStatus, ENT_QUOTES, 'UTF-8') ?></strong>
