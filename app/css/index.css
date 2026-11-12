@@ -1,0 +1,534 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #e2e8f0;
+    
+    background-color: #03050a;
+    background-image:
+        radial-gradient(ellipse at 15% 30%, rgba(35, 85, 180, 0.22), transparent 45%),
+        radial-gradient(ellipse at 85% 65%, rgba(25, 65, 150, 0.17), transparent 42%),
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+        linear-gradient(180deg, #0b101c, #03050a 75%);
+    background-size: auto, auto, 40px 40px, 40px 40px, 200px 200px, 200px 200px, 100% 100%;
+    background-attachment: fixed;
+    
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container-principal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1000px;
+    gap: 50px;
+    margin: auto;
+}
+
+.info-esquerda {
+    display: flex;
+    flex-direction: column;
+    max-width: 480px;
+}
+
+.tag-conta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: rgba(30, 41, 59, 0.5);
+    border: 1px solid #334155;
+    color: #94a3b8;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    width: fit-content;
+    margin-bottom: 24px;
+}
+
+.tag-conta span {
+    font-size: 16px;
+    color: #3b82f6;
+}
+
+.info-esquerda h1 {
+    font-size: 38px;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-bottom: 12px;
+}
+
+.titulo-info {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #e2e8f0;
+}
+
+.subtitulo-info {
+    font-size: 16px;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin-bottom: 40px;
+}
+
+.lista-recursos {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.item-recurso {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.icone-recurso {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.icone-recurso span {
+    font-size: 20px;
+}
+
+.texto-recurso h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 4px;
+}
+
+.texto-recurso p {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+form {
+    background-color: #111827;
+    border: 1px solid #1f2937;
+    border-radius: 12px;
+    padding: 35px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    flex-shrink: 0;
+}
+
+.seletor-abas {
+    display: flex;
+    background-color: #1e293b;
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 10px;
+}
+
+.aba {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.aba:hover {
+    color: #f8fafc;
+}
+
+.aba.ativa {
+    background-color: #334155;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.campo-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.senha-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.link-esqueci {
+    font-size: 12px;
+    color: #3b82f6;
+    text-decoration: none;
+}
+
+.link-esqueci:hover {
+    text-decoration: underline;
+}
+
+.cabecalho-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.cabecalho-form h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.cabecalho-form p {
+    font-size: 14px;
+    color: #94a3b8;
+}
+
+label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+.input-com-icone {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.icone-input {
+    position: absolute;
+    left: 14px;
+    font-size: 20px;
+    color: #64748b;
+    pointer-events: none;
+    user-select: none;
+    transition: color 0.2s;
+}
+
+.icone-senha-olho {
+    position: absolute;
+    right: 14px;
+    font-size: 20px;
+    color: #64748b;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.icone-senha-olho:hover {
+    color: #94a3b8;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    font-family: inherit;
+    font-size: 15px;
+    padding: 12px 44px 12px 44px; /* Ajustado para ícones em ambos os lados na senha */
+    background-color: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: #f8fafc;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-com-icone:focus-within .icone-input {
+    color: #3b82f6;
+}
+
+input:focus-visible {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.requisitos-senha {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.requisito {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.icone-check {
+    font-size: 14px;
+    color: #64748b; /* COR DO SIMBOLO DE CHECK( O originl estava verde) */
+}
+
+button {
+    width: 100%;
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    color: #ffffff;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+}
+
+button:hover {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    box-shadow: 0 6px 25px rgba(59, 130, 246, 0.6);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.5);
+}
+
+.termos-privacidade {
+    font-size: 12px;
+    color: #94a3b8;
+    text-align: center;
+    margin-top: 10px;
+    line-height: 1.4;
+}
+
+.termos-privacidade a {
+    color: #94a3b8;
+    text-decoration: underline;
+}
+
+.termos-privacidade a:hover {
+    color: #cbd5e1;
+}
+
+@media (max-width: 900px) {
+    .container-principal {
+        flex-direction: column;
+        justify-content: center;
+        gap: 60px;
+    }
+    
+    .info-esquerda {
+        align-items: center;
+        text-align: center;
+    }
+
+    .item-recurso {
+        text-align: left;
+    }
+}
+
+/* Animação dos botões "Entrar" e "Criar conta" */
+@keyframes surgirSuave {
+    from {
+        opacity: 0;
+        transform: translateY(15px); 
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);    
+    }
+}
+
+/* Animação nas duas paginas  */
+.container-principal {
+    animation: surgirSuave 0.4s ease-out forwards;
+}
+
+
+.aba {
+    transition: all 0.3s ease;
+    border-radius: 6px;
+}
+
+.aba:not(.ativa):hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+
+
+.card-alerta-sistema {
+    margin-top: 40px;
+    background-color: rgba(15, 23, 42, 0.6); 
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+
+.card-alerta-sistema::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: #f59e0b; 
+}
+
+.alerta-cabecalho {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #f8fafc;
+    margin-bottom: 8px;
+}
+
+.icone-aviso {
+    color: #f59e0b;
+    font-size: 18px !important;
+}
+
+.alerta-corpo {
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.5;
+    padding-left: 26px; 
+}
+
+.alerta-corpo strong {
+    color: #e2e8f0;
+}
+
+
+
+/* 
+(FOOTER)
+ */
+
+.rodape-avancado {
+    background-color: #030712;
+    border-top: 2px solid #1e293b;
+    padding: 25px; /* Reduzi de 60px para 30px na parte superior e inferior */
+    font-family: Arial, sans-serif;
+    
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: auto; 
+}
+
+.rodape-conteudo {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: flex-start; 
+    gap: 40px;
+}
+
+.rodape-marca {
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.rodape-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.rodape-marca p {
+    color: #94a3b8;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.rodape-comunidade {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 14px;
+    margin-top: 8px;
+    transition: color 0.2s ease;
+}
+
+.rodape-comunidade:hover {
+    color: #ffffff;
+}
+
+.rodape-comunidade span {
+    font-size: 18px; /* Tamanho do ícone do discord/fórum */
+}
+
+.rodape-menus {
+    display: flex;
+    gap: 60px; 
+    flex-wrap: wrap;
+    margin: 0 auto; 
+    padding-top: 20px; 
+}
+
+.rodape-coluna {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; 
+}
+.rodape-coluna h4 {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 8px 0;
+}
+
+.rodape-coluna a {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s ease;
+}
+
+.rodape-coluna a:hover {
+    color: #ffffff;
+}
+
