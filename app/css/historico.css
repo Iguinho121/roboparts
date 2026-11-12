@@ -1,0 +1,351 @@
+/* Configuracoes gerais da pagina. */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    background-color: #070b12;
+    background-image:
+        radial-gradient(ellipse at 12% 15%, rgba(35, 85, 180, 0.18), transparent 42%),
+        radial-gradient(ellipse at 90% 60%, rgba(25, 65, 150, 0.13), transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: auto, auto, 40px 40px, 40px 40px;
+    background-attachment: fixed;
+    color: #edf3ff;
+    font-family: Arial, sans-serif;
+}
+
+/* Limita a largura do conteudo e centraliza a pagina. */
+.pagina {
+    width: 92%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 0;
+}
+
+/* Cabecalho com titulo e botao de voltar. */
+.cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.identificacao {
+    margin-bottom: 10px;
+    color: #6da0ff;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.cabecalho h1 {
+    margin-bottom: 10px;
+    font-size: 32px;
+}
+
+.descricao,
+.titulo-painel p {
+    color: #9aa8bd;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Estilo dos botoes e links de acao. */
+.botao-voltar,
+.botao-filtrar,
+.botao-limpar {
+    display: inline-block;
+    padding: 11px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.botao-voltar,
+.botao-limpar {
+    border: 1px solid #34445e;
+    background-color: #111c2d;
+    color: #dce8ff;
+}
+
+.botao-voltar:hover,
+.botao-limpar:hover {
+    background-color: #1b2b43;
+}
+
+/* Cartoes com os totais do historico. */
+.resumo {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.cartao,
+.painel {
+    border: 1px solid #26344b;
+    border-radius: 12px;
+    background-color: rgba(13, 20, 33, 0.92);
+}
+
+.cartao {
+    padding: 20px;
+}
+
+.cartao span {
+    display: block;
+    margin-bottom: 12px;
+    color: #9aa8bd;
+    font-size: 13px;
+}
+
+.cartao strong {
+    font-size: 27px;
+}
+
+.texto-entrada,
+.entrada {
+    color: #65d69a;
+}
+
+.texto-emprestimo,
+.emprestimo {
+    color: #f4bd62;
+}
+
+.texto-devolucao,
+.devolucao {
+    color: #78aaff;
+}
+
+.texto-saida,
+.saida {
+    color: #ff8585;
+}
+
+/* Painel que agrupa os filtros e a tabela. */
+.painel {
+    padding: 22px;
+    margin-bottom: 22px;
+}
+
+.titulo-painel {
+    margin-bottom: 20px;
+}
+
+.titulo-painel h2 {
+    margin-bottom: 7px;
+    font-size: 19px;
+}
+
+/* Organizacao dos campos de pesquisa. */
+.filtros {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1fr 1fr auto;
+    align-items: end;
+    gap: 13px;
+}
+
+.campo label {
+    display: block;
+    margin-bottom: 8px;
+    color: #c3cee0;
+    font-size: 13px;
+}
+
+.campo input,
+.campo select {
+    width: 100%;
+    min-height: 42px;
+    padding: 10px;
+    border: 1px solid #34445e;
+    border-radius: 7px;
+    outline: none;
+    background-color: #0a111d;
+    color: #edf3ff;
+    font-size: 13px;
+}
+
+.campo input:focus,
+.campo select:focus {
+    border-color: #5d91f5;
+}
+
+.acoes-filtro {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.botao-filtrar {
+    border: none;
+    background-color: #3979ed;
+    color: white;
+}
+
+.botao-filtrar:hover {
+    background-color: #2865d2;
+}
+
+/* Cabecalho da lista de registros. */
+.titulo-lista {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.contador {
+    color: #9aa8bd;
+    font-size: 12px;
+}
+
+/* Permite rolar a tabela para o lado em telas pequenas. */
+.tabela-responsiva {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+th,
+td {
+    padding: 15px 12px;
+    border-bottom: 1px solid #26344b;
+    font-size: 13px;
+}
+
+th {
+    background-color: #111c2d;
+    color: #aebbd0;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+td {
+    color: #dce5f3;
+}
+
+td strong,
+td small {
+    display: block;
+}
+
+td small {
+    margin-top: 5px;
+    color: #8493aa;
+}
+
+/* Etiquetas coloridas para diferenciar os tipos de movimentacao. */
+.etiqueta {
+    display: inline-block;
+    padding: 6px 9px;
+    border-radius: 20px;
+    background-color: #202b3c;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.etiqueta.entrada {
+    background-color: rgba(55, 174, 113, 0.13);
+}
+
+.etiqueta.emprestimo {
+    background-color: rgba(244, 189, 98, 0.13);
+}
+
+.etiqueta.devolucao {
+    background-color: rgba(120, 170, 255, 0.13);
+}
+
+.etiqueta.saida {
+    background-color: rgba(255, 133, 133, 0.13);
+}
+
+.observacao {
+    min-width: 190px;
+    color: #aebbd0;
+}
+
+/* Mensagens de erro ou quando a pesquisa nao encontra registros. */
+.mensagem-vazia {
+    padding: 35px 15px;
+    color: #aebbd0;
+    text-align: center;
+}
+
+.mensagem-vazia h3 {
+    margin-bottom: 8px;
+    color: #edf3ff;
+}
+
+.aviso-limite,
+.rodape {
+    margin-top: 15px;
+    color: #8493aa;
+    font-size: 12px;
+}
+
+/* Ajustes para tablets e celulares. */
+@media (max-width: 1050px) {
+    .resumo {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .filtros {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .campo-pesquisa {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 600px) {
+    .pagina {
+        width: 94%;
+        padding: 25px 0;
+    }
+
+    .cabecalho {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .cabecalho h1 {
+        font-size: 26px;
+    }
+
+    .resumo {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .filtros {
+        grid-template-columns: 1fr;
+    }
+
+    .campo-pesquisa {
+        grid-column: auto;
+    }
+
+    .acoes-filtro {
+        flex-wrap: wrap;
+    }
+
+    .titulo-lista {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
