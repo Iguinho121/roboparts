@@ -254,7 +254,7 @@ input[type="password"] {
     width: 100%;
     font-family: inherit;
     font-size: 15px;
-    padding: 12px 44px 12px 44px; /* Ajustado para ícones em ambos os lados na senha */
+    padding: 12px 44px 12px 44px; 
     background-color: #1e293b;
     border: 1px solid #334155;
     border-radius: 8px;
@@ -288,7 +288,7 @@ input:focus-visible {
 
 .icone-check {
     font-size: 14px;
-    color: #64748b; /* COR DO SIMBOLO DE CHECK( O originl estava verde) */
+    color: #64748b; 
 }
 
 button {
@@ -441,7 +441,7 @@ button:focus-visible {
 .rodape-avancado {
     background-color: #030712;
     border-top: 2px solid #1e293b;
-    padding: 25px; /* Reduzi de 60px para 30px na parte superior e inferior */
+    padding: 25px; 
     font-family: Arial, sans-serif;
     
     width: 100%;
@@ -496,7 +496,7 @@ button:focus-visible {
 }
 
 .rodape-comunidade span {
-    font-size: 18px; /* Tamanho do ícone do discord/fórum */
+    font-size: 18px; /* Tamanho do ícone do FOOTER */
 }
 
 .rodape-menus {
