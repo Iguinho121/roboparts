@@ -1,14 +1,65 @@
 <?php
+session_start();
 
-declare(strict_types=1);
+// Se o utilizador já estiver logado redireciona para o dashboard
+if (isset($_SESSION['usuario_id'])) {
+    header('Location: dashboard.php');
+    exit;
+}
 
-$databaseStatus = 'Conectado';
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+$mensagem = '';
+$tipoMensagem = '';
 
 try {
     require_once __DIR__ . '/init.php';
-    $pdo->query('SELECT 1');
+    
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        
+        $nome = trim($_POST['nome'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $senha = $_POST['senha'] ?? '';
+
+        if (empty($nome) || empty($email) || empty($senha)) {
+            $mensagem = 'Por favor, preencha todos os campos.';
+            $tipoMensagem = 'erro';
+            
+        } else {
+            $stmt = $pdo->prepare('SELECT id FROM usuarios WHERE email = :email');
+            $stmt->execute(['email' => $email]);
+            
+            if ($stmt->fetch()) {
+                $mensagem = 'Este e-mail já está cadastrado. Vá para a aba "Entrar".';
+                $tipoMensagem = 'erro';
+                
+            } else {
+                $senhaCriptografada = password_hash($senha, PASSWORD_DEFAULT);
+                
+                $sql = 'INSERT INTO usuarios (nome, email, senha, tipo_usuario) VALUES (:nome, :email, :senha, "Comum")';
+                $inserir = $pdo->prepare($sql);
+                
+                $sucesso = $inserir->execute([
+                    'nome' => $nome,
+                    'email' => $email,
+                    'senha' => $senhaCriptografada
+                ]);
+                
+                if ($sucesso) {
+                    $mensagem = 'Conta criada com sucesso! Vá para a aba "Entrar" para aceder ao sistema.';
+                    $tipoMensagem = 'sucesso';
+                } else {
+                    $mensagem = 'Erro ao criar a conta. Tente novamente.';
+                    $tipoMensagem = 'erro';
+                }
+            }
+        }
+    }
 } catch (Throwable $exception) {
-    $databaseStatus = 'Indisponível';
+    $mensagem = 'Erro no BD: ' . $exception->getMessage();
+    $tipoMensagem = 'erro';
 }
 ?>
 <!DOCTYPE html>
@@ -17,7 +68,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Criar Conta</title>
+    <title>Criar Conta - Flux</title>
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="index.css">
@@ -34,8 +85,7 @@ try {
             </div>
 
             <h1>Sua oficina de robótica organizada</h1>
-            <p class="subtitulo-info">Gerencie componentes, controle empréstimos de peças e monitore o uso em projetos.
-            </p>
+            <p class="subtitulo-info">Gerencie componentes, controle empréstimos de peças e monitore o uso em projetos.</p>
 
             <div class="lista-recursos">
                 <!-- Recurso 1 -->
@@ -45,8 +95,7 @@ try {
                     </div>
                     <div class="texto-recurso">
                         <h4>Estoque e Histórico</h4>
-                        <p>Controle quantidades disponíveis, registre a condição das peças e acesse o histórico de
-                            movimentações.</p>
+                        <p>Controle quantidades disponíveis, registre a condição das peças e acesse o histórico de movimentações.</p>
                     </div>
                 </div>
 
@@ -57,8 +106,7 @@ try {
                     </div>
                     <div class="texto-recurso">
                         <h4>Projetos e Empréstimos</h4>
-                        <p>Acompanhe devoluções de peças e saiba exatamente quais componentes estão alocados em cada
-                            robô.</p>
+                        <p>Acompanhe devoluções de peças e saiba exatamente quais componentes estão alocados em cada robô.</p>
                     </div>
                 </div>
 
@@ -69,27 +117,33 @@ try {
                     </div>
                     <div class="texto-recurso">
                         <h4>Kits e Catálogos</h4>
-                        <p>Crie kits prontos por tipo de projeto e monte listas de componentes com compatibilidade
-                            técnica.</p>
+                        <p>Crie kits prontos por tipo de projeto e monte listas de componentes com compatibilidade técnica.</p>
                     </div>
                 </div>
             </div>
-
-
-
         </div>
 
+        <!-- FORMULÁRIO -->
         <form action="" method="POST">
 
             <div class="seletor-abas">
-                <a href="login.html" class="aba">Entrar</a>
-                <a href="cadastro.html" class="aba ativa">Criar conta</a>
+                <a href="login.php" class="aba">Entrar</a>
+                <a href="cadastro.php" class="aba ativa">Criar conta</a>
             </div>
 
             <div class="cabecalho-form">
                 <h2>Crie sua conta Flux</h2>
                 <p>Leva menos de um minuto.</p>
             </div>
+
+            <?php if (!empty($mensagem)): ?>
+                <div class="alerta-moderno <?= $tipoMensagem === 'sucesso' ? 'alerta-sucesso' : 'alerta-erro' ?>" style="margin-bottom: 15px; padding: 10px; border-radius: 6px; <?= $tipoMensagem === 'sucesso' ? 'background-color: #112a18; color: #4aff71; border: 1px solid #1a5a2a;' : 'background-color: #2a1111; color: #ff4a4a; border: 1px solid #5a1a1a;' ?>">
+                    <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px;">
+                        <?= $tipoMensagem === 'sucesso' ? 'check_circle' : 'error' ?>
+                    </span>
+                    <span><?= htmlspecialchars($mensagem) ?></span>
+                </div>
+            <?php endif; ?>
 
             <div class="campo-grupo">
                 <label for="nome">Nome</label>
@@ -110,7 +164,6 @@ try {
             <div class="campo-grupo">
                 <div class="senha-cabecalho">
                     <label for="senha">Senha</label>
-                    <!-- <a href="#" class="link-esqueci">Esqueci minha senha</a> Apenas para o login e n para o Criar conta -->
                 </div>
                 <div class="input-com-icone">
                     <span class="material-symbols-outlined icone-input">lock</span>
@@ -118,24 +171,21 @@ try {
                     <span class="material-symbols-outlined icone-senha-olho">visibility</span>
                 </div>
                 <div class="requisitos-senha">
-                    <span class="requisito"><span class="material-symbols-outlined icone-check">check</span> 8+
-                        caracteres</span>
-                    <span class="requisito"><span class="material-symbols-outlined icone-check">check</span> Uma
-                        letra</span>
-                    <span class="requisito"><span class="material-symbols-outlined icone-check">check</span> Um
-                        número</span>
+                    <span class="requisito"><span class="material-symbols-outlined icone-check">check</span> 8+ caracteres</span>
+                    <span class="requisito"><span class="material-symbols-outlined icone-check">check</span> Uma letra</span>
+                    <span class="requisito"><span class="material-symbols-outlined icone-check">check</span> Um número</span>
                 </div>
             </div>
 
             <button type="submit">Criar conta</button>
 
             <div class="termos-privacidade">
-                Ao criar a conta você concorda com os <a href="#">Termos de Uso</a> e a <a href="#">Política de
-                    Privacidade</a>.
+                Ao criar a conta você concorda com os <a href="#">Termos de Uso</a> e a <a href="#">Política de Privacidade</a>.
             </div>
         </form>
     </div>
-    <!-- Footer -->
+
+    <!-- FOOTER -->
     <footer class="rodape-avancado">
         <div class="rodape-conteudo">
 
@@ -144,15 +194,13 @@ try {
                     <span class="material-symbols-outlined">precision_manufacturing</span>
                     <span>Flux</span>
                 </div>
-                <p>Organização inteligente para oficinas de robótica. Feito para equipes e makers que querem controle
-                    total de suas peças e projetos, sem surpresas.</p>
+                <p>Organização inteligente para oficinas de robótica. Feito para equipes e makers que querem controle total de suas peças e projetos, sem surpresas.</p>
                 <a href="#" class="rodape-comunidade">
                     <span class="material-symbols-outlined">forum</span> Nossa comunidade
                 </a>
             </div>
 
             <div class="rodape-menus">
-
                 <div class="rodape-coluna">
                     <h4>Produto</h4>
                     <a href="#">Recursos</a>
@@ -162,8 +210,8 @@ try {
 
                 <div class="rodape-coluna">
                     <h4>Conta</h4>
-                    <a href="login.html">Entrar</a>
-                    <a href="cadastro.html">Criar conta</a>
+                    <a href="login.php">Entrar</a>
+                    <a href="cadastro.php">Criar conta</a>
                 </div>
 
                 <div class="rodape-coluna">
@@ -177,10 +225,8 @@ try {
                     <a href="#">Falar com a gente</a>
                     <a href="#">Central de Ajuda</a>
                 </div>
-
             </div>
         </div>
     </footer>
 </body>
-
 </html>
