@@ -9,7 +9,7 @@ CREATE TABLE usuarios (
     senha VARCHAR(255) NOT NULL,
     tipo_usuario ENUM('Comum', 'Admin') DEFAULT 'Comum',
     data_cadastro DATETIME DEFAULT CURRENT_TIMESTAMP
-)
+);
 
 CREATE TABLE categorias (
   id INT AUTO_INCREMENT PRIMARY KEY,
