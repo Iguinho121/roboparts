@@ -128,7 +128,7 @@ try {
 
             <div class="seletor-abas">
                 <a href="login.php" class="aba">Entrar</a>
-                <a href="cadastro.php" class="aba ativa">Criar conta</a>
+                <a href="index.php" class="aba ativa">Criar conta</a>
             </div>
 
             <div class="cabecalho-form">
