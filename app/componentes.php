@@ -64,7 +64,7 @@ $condicoes = [
         <nav class="sidebar">
 
             <div class="sidebar-logo">
-                <img src="imagens/Logotipo futurista LUX em ciano.png" alt="Logo Flux">
+                <img src="imagens/novo_logo.png" alt="Logo Flux">
             </div>
 
             <ul class="sidebar-menu">
