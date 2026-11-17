@@ -84,7 +84,7 @@ $condicoes = [
                 </li>
 
                 <li>
-                    <a href="adicionar_componente.php">
+                    <a href="cadastro_componente.php">
                         <span class="material-symbols-outlined menu-icon">add_circle</span>
                         <span>Cadastro</span>
                     </a>
