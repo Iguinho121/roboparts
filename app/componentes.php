@@ -70,7 +70,7 @@ $condicoes = [
             <ul class="sidebar-menu">
 
                 <li>
-                    <a href="index.php">
+                    <a href="dashboard.php">
                         <span class="material-symbols-outlined menu-icon">dashboard</span>
                         <span>Dashboard</span>
                     </a>
