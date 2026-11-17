@@ -1,700 +1,269 @@
-
 <?php
+// Historico de movimentacoes do RoboParts.
 
-/*
-    HISTORICO - ROBOPARTS
+$erroConsulta = '';
+$consultaOk = false;
+$movimentacoes = [];
+$resumo = ['total' => 0, 'entradas' => 0, 'emprestimos' => 0, 'devolucoes' => 0, 'saidas' => 0];
 
-    Pagina responsavel por consultar e apresentar
-    as movimentacoes registradas no banco de dados.
-*/
+// Aceita somente valores simples enviados pelo formulario.
+$lerFiltro = static fn(string $nome): string =>
+  isset($_GET[$nome]) && is_string($_GET[$nome]) ? trim($_GET[$nome]) : '';
 
-// Inclui a conexao com o banco.
-require_once __DIR__ . "/banco/database.php";
+$busca = $lerFiltro('busca');
+$tipo = $lerFiltro('tipo');
+$dataInicio = $lerFiltro('data_inicio');
+$dataFim = $lerFiltro('data_fim');
 
-// Recebe os filtros da pagina.
-$busca = trim($_GET["busca"] ?? "");
-$tipo = $_GET["tipo"] ?? "";
-$dataInicio = $_GET["data_inicio"] ?? "";
-$dataFim = $_GET["data_fim"] ?? "";
-
-// Tipos de movimentacao existentes no banco.
-$tiposPermitidos = ["Entrada", "Saida", "Emprestimo", "Devolucao"];
-
-// Verifica se o tipo selecionado e valido.
+$tiposPermitidos = ['Entrada', 'Saida', 'Emprestimo', 'Devolucao'];
 if (!in_array($tipo, $tiposPermitidos, true)) {
-    $tipo = "";
+  $tipo = '';
 }
 
-// Verifica se a data esta correta.
-function dataValida($data)
-{
-    if ($data == "") {
-        return false;
-    }
+// Valida datas no formato AAAA-MM-DD.
+$validarData = static function (string $data): bool {
+  if (!preg_match('/\A\d{4}-\d{2}-\d{2}\z/', $data)) {
+    return false;
+  }
 
-    $dataObjeto = DateTime::createFromFormat("Y-m-d", $data);
+  [$ano, $mes, $dia] = array_map('intval', explode('-', $data));
+  return checkdate($mes, $dia, $ano);
+};
 
-    return $dataObjeto && $dataObjeto->format("Y-m-d") == $data;
+if (!$validarData($dataInicio)) {
+  $dataInicio = '';
+}
+if (!$validarData($dataFim)) {
+  $dataFim = '';
 }
 
-// Descarta datas invalidas.
-if (!dataValida($dataInicio)) {
-    $dataInicio = "";
-}
-
-if (!dataValida($dataFim)) {
-    $dataFim = "";
-}
-
-// Prepara as condicoes dos filtros.
-$condicoes = [];
+// Monta os filtros usados tanto no resumo quanto na tabela.
+$filtros = [];
 $parametros = [];
 
-// Pesquisa pelo nome ou codigo do componente.
-if ($busca != "") {
-    $condicoes[] = "(c.nome LIKE :busca_nome OR c.codigo LIKE :busca_codigo)";
-
-    $parametros[":busca_nome"] = "%" . $busca . "%";
-    $parametros[":busca_codigo"] = "%" . $busca . "%";
+if ($busca !== '') {
+  $filtros[] = '(c.nome LIKE :nome OR c.codigo LIKE :codigo)';
+  $parametros[':nome'] = "%{$busca}%";
+  $parametros[':codigo'] = "%{$busca}%";
+}
+if ($tipo !== '') {
+  $filtros[] = 'm.tipo_movimentacao = :tipo';
+  $parametros[':tipo'] = $tipo;
+}
+if ($dataInicio !== '') {
+  $filtros[] = 'm.data_movimentacao >= :data_inicio';
+  $parametros[':data_inicio'] = $dataInicio . ' 00:00:00';
+}
+if ($dataFim !== '') {
+  $filtros[] = 'm.data_movimentacao <= :data_fim';
+  $parametros[':data_fim'] = $dataFim . ' 23:59:59';
 }
 
-// Filtra pelo tipo de movimentacao.
-if ($tipo != "") {
-    $condicoes[] = "m.tipo_movimentacao = :tipo";
-    $parametros[":tipo"] = $tipo;
-}
+$sqlWhere = $filtros ? ' WHERE ' . implode(' AND ', $filtros) : '';
 
-// Filtra pela data inicial.
-if ($dataInicio != "") {
-    $condicoes[] = "m.data_movimentacao >= :data_inicio";
-    $parametros[":data_inicio"] = $dataInicio . " 00:00:00";
-}
-
-// Filtra pela data final.
-if ($dataFim != "") {
-    $condicoes[] = "m.data_movimentacao <= :data_fim";
-    $parametros[":data_fim"] = $dataFim . " 23:59:59";
-}
-
-// Junta os filtros na condicao WHERE.
-$sqlWhere = "";
-
-if (count($condicoes) > 0) {
-    $sqlWhere = " WHERE " . implode(" AND ", $condicoes);
-}
-
-// Variaveis que guardam os resultados.
-$movimentacoes = [];
-
-$total = 0;
-$entradas = 0;
-$emprestimos = 0;
-$devolucoes = 0;
-$saidas = 0;
-
-$erroConsulta = "";
-
-// Executa as consultas no banco.
 try {
+  // Segue o padrao das outras paginas do projeto: init cria a sessao e $pdo.
+  require_once __DIR__ . '/init.php';
 
-    // Cria a conexao usando o database.php.
-    $pdo = database();
+  // Os indicadores contam registros de movimentacao, nao unidades movimentadas.
+  $sqlResumo = "
+    SELECT COUNT(*) AS total,
+      COALESCE(SUM(m.tipo_movimentacao = 'Entrada'), 0) AS entradas,
+      COALESCE(SUM(m.tipo_movimentacao = 'Emprestimo'), 0) AS emprestimos,
+      COALESCE(SUM(m.tipo_movimentacao = 'Devolucao'), 0) AS devolucoes,
+      COALESCE(SUM(m.tipo_movimentacao = 'Saida'), 0) AS saidas
+    FROM movimentacoes m
+    INNER JOIN componentes c ON c.id = m.componente_id
+    {$sqlWhere}
+  ";
+  $consultaResumo = $pdo->prepare($sqlResumo);
+  $consultaResumo->execute($parametros);
+  $resumo = $consultaResumo->fetch() ?: $resumo;
 
-    // Consulta os totais das movimentacoes.
-    $sqlResumo = "
-        SELECT
-            COUNT(*) AS total,
-
-            COALESCE(SUM(
-                CASE WHEN m.tipo_movimentacao = 'Entrada'
-                THEN 1 ELSE 0 END
-            ), 0) AS entradas,
-
-            COALESCE(SUM(
-                CASE WHEN m.tipo_movimentacao = 'Emprestimo'
-                THEN 1 ELSE 0 END
-            ), 0) AS emprestimos,
-
-            COALESCE(SUM(
-                CASE WHEN m.tipo_movimentacao = 'Devolucao'
-                THEN 1 ELSE 0 END
-            ), 0) AS devolucoes,
-
-            COALESCE(SUM(
-                CASE WHEN m.tipo_movimentacao = 'Saida'
-                THEN 1 ELSE 0 END
-            ), 0) AS saidas
-
-        FROM movimentacoes m
-
-        INNER JOIN componentes c
-        ON m.componente_id = c.id
-
-        $sqlWhere
-    ";
-
-    $consultaResumo = $pdo->prepare($sqlResumo);
-    $consultaResumo->execute($parametros);
-
-    $resumo = $consultaResumo->fetch();
-
-    // Guarda os valores encontrados.
-    $total = $resumo["total"];
-    $entradas = $resumo["entradas"];
-    $emprestimos = $resumo["emprestimos"];
-    $devolucoes = $resumo["devolucoes"];
-    $saidas = $resumo["saidas"];
-
-
-    // Consulta as movimentacoes registradas.
-    $sqlHistorico = "
-        SELECT
-            m.id,
-            m.tipo_movimentacao,
-            m.quantidade,
-            m.data_movimentacao,
-            m.observacao,
-
-            c.nome AS componente_nome,
-            c.codigo AS componente_codigo,
-
-            p.nome AS projeto_nome
-
-        FROM movimentacoes m
-
-        INNER JOIN componentes c
-        ON m.componente_id = c.id
-
-        LEFT JOIN projetos p
-        ON m.projeto_id = p.id
-
-        $sqlWhere
-
-        ORDER BY m.data_movimentacao DESC, m.id DESC
-
-        LIMIT 200
-    ";
-
-    $consultaHistorico = $pdo->prepare($sqlHistorico);
-    $consultaHistorico->execute($parametros);
-
-    $movimentacoes = $consultaHistorico->fetchAll();
-
-} catch (PDOException $erro) {
-
-    // Mostra o erro durante o desenvolvimento.
-    $erroConsulta = $erro->getMessage();
-
+  // Busca as movimentacoes mais recentes, com os nomes relacionados.
+  $sqlHistorico = "
+    SELECT m.id, m.tipo_movimentacao, m.quantidade, m.data_movimentacao,
+        m.observacao, c.nome AS componente_nome, c.codigo AS componente_codigo,
+        p.nome AS projeto_nome
+    FROM movimentacoes m
+    INNER JOIN componentes c ON c.id = m.componente_id
+    LEFT JOIN projetos p ON p.id = m.projeto_id
+    {$sqlWhere}
+    ORDER BY m.data_movimentacao DESC, m.id DESC
+    LIMIT 200
+  ";
+  $consultaHistorico = $pdo->prepare($sqlHistorico);
+  $consultaHistorico->execute($parametros);
+  $movimentacoes = $consultaHistorico->fetchAll();
+  $consultaOk = true;
+} catch (Throwable $erro) {
+  // O detalhe tecnico fica no log; a tela mostra uma mensagem amigavel.
+  error_log('Erro no historico do RoboParts: ' . $erro->getMessage());
+  $erroConsulta = 'Não foi possível carregar o histórico. Verifique a conexão e tente novamente.';
 }
 
+// Textos e cores dos tipos de movimentacao.
+$tiposExibicao = [
+  'Entrada' => ['nome' => 'Entrada', 'classe' => 'entrada'],
+  'Saida' => ['nome' => 'Saída', 'classe' => 'saida'],
+  'Emprestimo' => ['nome' => 'Empréstimo', 'classe' => 'emprestimo'],
+  'Devolucao' => ['nome' => 'Devolução', 'classe' => 'devolucao'],
+];
 
-// Traduz os tipos para aparecerem corretamente.
-function nomeTipo($tipoMovimentacao)
-{
-    if ($tipoMovimentacao == "Saida") {
-        return "Saída";
-    }
-
-    if ($tipoMovimentacao == "Emprestimo") {
-        return "Empréstimo";
-    }
-
-    if ($tipoMovimentacao == "Devolucao") {
-        return "Devolução";
-    }
-
-    return $tipoMovimentacao;
-}
-
-
-// Define a classe CSS de cada movimentacao.
-function classeTipo($tipoMovimentacao)
-{
-    if ($tipoMovimentacao == "Entrada") {
-        return "entrada";
-    }
-
-    if ($tipoMovimentacao == "Devolucao") {
-        return "devolucao";
-    }
-
-    if ($tipoMovimentacao == "Emprestimo") {
-        return "emprestimo";
-    }
-
-    return "saida";
-}
-
-
-// Protege os textos exibidos na pagina.
-function escapar($texto)
-{
-    return htmlspecialchars((string) $texto, ENT_QUOTES, "UTF-8");
-}
-
+// Escapa os valores antes de inseri-los no HTML.
+$h = static fn($valor): string => htmlspecialchars((string) ($valor ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 ?>
-
 <!DOCTYPE html>
-<html lang="pt-br">
-
+<html lang="pt-BR">
 <head>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Histórico | RoboParts</title>
-
-    <!-- CSS da pagina -->
-    <link rel="stylesheet" href="css/historico.css">
-
-    <!-- Icones do menu -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico | RoboParts</title>
+  <link rel="stylesheet" href="css/historico.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..400,0..1,0">
 </head>
-
 <body>
+  <nav class="sidebar" aria-label="Navegação principal">
+    <a class="sidebar-logo" href="index.php" aria-label="Flux - início">
+      <img src="imagens/logoflux.png" alt="Logo Flux">
+      <span>LUX</span>
+    </a>
 
-    <!-- MENU LATERAL -->
-    <nav class="sidebar">
+    <ul class="sidebar-menu">
+      <li><a href="index.php"><span class="material-symbols-outlined menu-icon">dashboard</span><span>Dashboard</span></a></li>
+      <li><a href="componentes.php"><span class="material-symbols-outlined menu-icon">memory</span><span>Componentes</span></a></li>
+      <li><a href="adicionar_componente.php"><span class="material-symbols-outlined menu-icon">add_circle</span><span>Cadastro</span></a></li>
+      <li><a href="#" aria-disabled="true" title="Página ainda não disponível"><span class="material-symbols-outlined menu-icon">swap_horiz</span><span>Empréstimo</span></a></li>
+      <li><a href="#" aria-disabled="true" title="Página ainda não disponível"><span class="material-symbols-outlined menu-icon">folder</span><span>Projetos</span></a></li>
+      <li class="active"><a href="historico.php" aria-current="page"><span class="material-symbols-outlined menu-icon">history</span><span>Histórico</span></a></li>
+      <li><a href="#" aria-disabled="true" title="Página ainda não disponível"><span class="material-symbols-outlined menu-icon">inventory_2</span><span>Kits e Catálogos</span></a></li>
+    </ul>
 
-        <div class="sidebar-logo">
+    <div class="sidebar-card">
+      <img src="imagens/robozin.png" alt="Robô Flux">
+      <h3>Flux</h3>
+      <span class="robo-descricao">Inovação em<br>cada componente.</span>
+    </div>
 
-            <img src="imagens/logoflux.png" alt="Logo Flux">
+    <div class="sidebar-status"><span class="status-bolinha"></span><p>Sistema Operacional <strong>v1.0</strong></p></div>
+  </nav>
 
-            <span>LUX</span>
+  <main class="pagina">
+    <header class="cabecalho">
+      <div>
+        <p class="identificacao">ROBOPARTS / ESTOQUE</p>
+        <h1>Histórico de movimentações</h1>
+        <p class="descricao">Acompanhe as entradas, saídas, empréstimos e devoluções dos componentes.</p>
+      </div>
+    </header>
 
+    <section class="resumo" aria-label="Resumo das movimentações">
+      <?php
+      $cartoes = [
+        ['titulo' => 'Total de registros', 'valor' => 'total', 'classe' => ''],
+        ['titulo' => 'Entradas', 'valor' => 'entradas', 'classe' => 'texto-entrada'],
+        ['titulo' => 'Empréstimos', 'valor' => 'emprestimos', 'classe' => 'texto-emprestimo'],
+        ['titulo' => 'Devoluções', 'valor' => 'devolucoes', 'classe' => 'texto-devolucao'],
+        ['titulo' => 'Saídas', 'valor' => 'saidas', 'classe' => 'texto-saida'],
+      ];
+      foreach ($cartoes as $cartao): ?>
+        <article class="cartao">
+          <span><?= $h($cartao['titulo']) ?></span>
+          <strong class="<?= $h($cartao['classe']) ?>"><?= $consultaOk ? $h($resumo[$cartao['valor']]) : '—' ?></strong>
+        </article>
+      <?php endforeach; ?>
+    </section>
+
+    <section class="painel">
+      <div class="titulo-painel">
+        <h2>Consultar movimentações</h2>
+        <p>Utilize os filtros para encontrar um registro específico.</p>
+      </div>
+
+      <form method="GET" action="historico.php" class="filtros">
+        <div class="campo campo-pesquisa">
+          <label for="busca">Componente ou código</label>
+          <input type="search" id="busca" name="busca" placeholder="Ex.: Arduino ou ARD-001" value="<?= $h($busca) ?>">
         </div>
-
-
-        <!-- Opcoes de navegacao -->
-        <ul class="sidebar-menu">
-
-            <li>
-                <a href="index.php">
-                    <span class="material-symbols-outlined menu-icon">dashboard</span>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="componentes.php">
-                    <span class="material-symbols-outlined menu-icon">memory</span>
-                    <span>Componentes</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="cadastro.php">
-                    <span class="material-symbols-outlined menu-icon">add_circle</span>
-                    <span>Cadastro</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="emprestimo.php">
-                    <span class="material-symbols-outlined menu-icon">swap_horiz</span>
-                    <span>Empréstimo</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="projetos.php">
-                    <span class="material-symbols-outlined menu-icon">folder</span>
-                    <span>Projetos</span>
-                </a>
-            </li>
-
-            <!-- Pagina atual -->
-            <li class="active">
-                <a href="historico.php">
-                    <span class="material-symbols-outlined menu-icon">history</span>
-                    <span>Histórico</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="kits.php">
-                    <span class="material-symbols-outlined menu-icon">inventory_2</span>
-                    <span>Kits e Catálogos</span>
-                </a>
-            </li>
-
-        </ul>
-
-
-        <!-- Cartao do robo -->
-        <div class="sidebar-card">
-
-            <img src="imagens/robozin.png" alt="Robô do menu">
-
-            <h3>Flux</h3>
-
-            <span class="robo-descricao">
-                Inovação em<br>cada componente.
-            </span>
-
+        <div class="campo">
+          <label for="tipo">Tipo de movimentação</label>
+          <select name="tipo" id="tipo">
+            <option value="">Todos</option>
+            <?php foreach ($tiposExibicao as $valor => $info): ?>
+              <option value="<?= $h($valor) ?>" <?= $tipo === $valor ? 'selected' : '' ?>><?= $h($info['nome']) ?></option>
+            <?php endforeach; ?>
+          </select>
         </div>
-
-
-        <!-- Status do sistema -->
-        <div class="sidebar-status">
-
-            <span class="status-bolinha"></span>
-
-            <p>
-                Sistema Operacional <strong>v1.0</strong>
-            </p>
-
+        <div class="campo">
+          <label for="data_inicio">Data inicial</label>
+          <input type="date" id="data_inicio" name="data_inicio" value="<?= $h($dataInicio) ?>">
         </div>
-
-    </nav>
-
-
-    <!-- CONTEUDO PRINCIPAL -->
-    <main class="pagina">
-
-        <!-- Cabecalho -->
-        <header class="cabecalho">
-
-            <div>
-
-                <p class="identificacao">ROBOPARTS / ESTOQUE</p>
-
-                <h1>Histórico de movimentações</h1>
-
-                <p class="descricao">
-                    Acompanhe todas as entradas, saídas, empréstimos e devoluções dos componentes.
-                </p>
-
-            </div>
-
-        </header>
-
-
-        <!-- Cartoes de resumo -->
-        <section class="resumo">
-
-            <article class="cartao">
-
-                <span>Total de registros</span>
-
-                <strong>
-                    <?php echo escapar($total); ?>
-                </strong>
-
-            </article>
-
-
-            <article class="cartao">
-
-                <span>Entradas</span>
-
-                <strong class="texto-entrada">
-                    <?php echo escapar($entradas); ?>
-                </strong>
-
-            </article>
-
-
-            <article class="cartao">
-
-                <span>Empréstimos</span>
-
-                <strong class="texto-emprestimo">
-                    <?php echo escapar($emprestimos); ?>
-                </strong>
-
-            </article>
-
-
-            <article class="cartao">
-
-                <span>Devoluções</span>
-
-                <strong class="texto-devolucao">
-                    <?php echo escapar($devolucoes); ?>
-                </strong>
-
-            </article>
-
-
-            <article class="cartao">
-
-                <span>Saídas</span>
-
-                <strong class="texto-saida">
-                    <?php echo escapar($saidas); ?>
-                </strong>
-
-            </article>
-
-        </section>
-
-
-        <!-- Filtros -->
-        <section class="painel">
-
-            <div class="titulo-painel">
-
-                <h2>Consultar movimentações</h2>
-
-                <p>
-                    Utilize os filtros para encontrar um registro específico.
-                </p>
-
-            </div>
-
-
-            <form method="GET" action="historico.php" class="filtros">
-
-                <div class="campo campo-pesquisa">
-
-                    <label for="busca">Componente ou código</label>
-
-                    <input
-                        type="text"
-                        id="busca"
-                        name="busca"
-                        placeholder="Ex.: Arduino ou ARD-001"
-                        value="<?php echo escapar($busca); ?>"
-                    >
-
-                </div>
-
-
-                <div class="campo">
-
-                    <label for="tipo">Tipo de movimentação</label>
-
-                    <select name="tipo" id="tipo">
-
-                        <option value="">Todos</option>
-
-                        <option value="Entrada" <?php echo $tipo == "Entrada" ? "selected" : ""; ?>>
-                            Entrada
-                        </option>
-
-                        <option value="Saida" <?php echo $tipo == "Saida" ? "selected" : ""; ?>>
-                            Saída
-                        </option>
-
-                        <option value="Emprestimo" <?php echo $tipo == "Emprestimo" ? "selected" : ""; ?>>
-                            Empréstimo
-                        </option>
-
-                        <option value="Devolucao" <?php echo $tipo == "Devolucao" ? "selected" : ""; ?>>
-                            Devolução
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div class="campo">
-
-                    <label for="data_inicio">Data inicial</label>
-
-                    <input
-                        type="date"
-                        id="data_inicio"
-                        name="data_inicio"
-                        value="<?php echo escapar($dataInicio); ?>"
-                    >
-
-                </div>
-
-
-                <div class="campo">
-
-                    <label for="data_fim">Data final</label>
-
-                    <input
-                        type="date"
-                        id="data_fim"
-                        name="data_fim"
-                        value="<?php echo escapar($dataFim); ?>"
-                    >
-
-                </div>
-
-
-                <div class="acoes-filtro">
-
-                    <button type="submit" class="botao-filtrar">
-                        Filtrar histórico
-                    </button>
-
-                    <a href="historico.php" class="botao-limpar">
-                        Limpar
-                    </a>
-
-                </div>
-
-            </form>
-
-        </section>
-
-
-        <!-- Tabela de movimentacoes -->
-        <section class="painel painel-tabela">
-
-            <div class="titulo-painel titulo-lista">
-
-                <div>
-
-                    <h2>Movimentações registradas</h2>
-
-                    <p>Os registros mais recentes aparecem primeiro.</p>
-
-                </div>
-
-                <span class="contador">
-                    <?php echo escapar(count($movimentacoes)); ?> registro(s)
-                </span>
-
-            </div>
-
-
-            <?php if ($erroConsulta != ""): ?>
-
-                <!-- Mensagem de erro -->
-                <div class="mensagem-vazia">
-
-                    <h3>Erro ao consultar o histórico</h3>
-
-                    <p>
-                        <?php echo escapar($erroConsulta); ?>
-                    </p>
-
-                </div>
-
-
-            <?php elseif (count($movimentacoes) > 0): ?>
-
-                <div class="tabela-responsiva">
-
-                    <table>
-
-                        <thead>
-
-                            <tr>
-
-                                <th>Data e hora</th>
-                                <th>Componente</th>
-                                <th>Tipo</th>
-                                <th>Quantidade</th>
-                                <th>Projeto</th>
-                                <th>Observação</th>
-
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody>
-
-                            <?php foreach ($movimentacoes as $movimentacao): ?>
-
-                                <tr>
-
-                                    <td class="data">
-
-                                        <?php
-                                        echo date(
-                                            "d/m/Y H:i",
-                                            strtotime($movimentacao["data_movimentacao"])
-                                        );
-                                        ?>
-
-                                    </td>
-
-
-                                    <td>
-
-                                        <strong>
-                                            <?php echo escapar($movimentacao["componente_nome"]); ?>
-                                        </strong>
-
-                                        <small>
-                                            <?php echo escapar($movimentacao["componente_codigo"] ?? "Sem código"); ?>
-                                        </small>
-
-                                    </td>
-
-
-                                    <td>
-
-                                        <span class="etiqueta <?php echo escapar(classeTipo($movimentacao["tipo_movimentacao"])); ?>">
-
-                                            <?php echo escapar(nomeTipo($movimentacao["tipo_movimentacao"])); ?>
-
-                                        </span>
-
-                                    </td>
-
-
-                                    <td>
-                                        <?php echo escapar($movimentacao["quantidade"]); ?>
-                                    </td>
-
-
-                                    <td>
-                                        <?php echo escapar($movimentacao["projeto_nome"] ?? "—"); ?>
-                                    </td>
-
-
-                                    <td class="observacao">
-
-                                        <?php echo escapar($movimentacao["observacao"] ?: "Sem observação"); ?>
-
-                                    </td>
-
-                                </tr>
-
-                            <?php endforeach; ?>
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-
-                <?php if (count($movimentacoes) == 200): ?>
-
-                    <p class="aviso-limite">
-                        São exibidos no máximo 200 registros.
-                        Utilize os filtros para refinar a pesquisa.
-                    </p>
-
-                <?php endif; ?>
-
-
-            <?php else: ?>
-
-                <!-- Quando nao existem registros -->
-                <div class="mensagem-vazia">
-
-                    <h3>Nenhuma movimentação encontrada</h3>
-
-                    <p>
-                        Não existem registros para os filtros selecionados.
-                    </p>
-
-                </div>
-
-            <?php endif; ?>
-
-        </section>
-
-
-        <p class="rodape">
-            O histórico apresenta as movimentações salvas no banco de dados.
-        </p>
-
-    </main>
-
+        <div class="campo">
+          <label for="data_fim">Data final</label>
+          <input type="date" id="data_fim" name="data_fim" value="<?= $h($dataFim) ?>">
+        </div>
+        <div class="acoes-filtro">
+          <button type="submit" class="botao-filtrar">Filtrar histórico</button>
+          <a href="historico.php" class="botao-limpar">Limpar</a>
+        </div>
+      </form>
+    </section>
+
+    <section class="painel painel-tabela">
+      <div class="titulo-painel titulo-lista">
+        <div>
+          <h2>Movimentações registradas</h2>
+          <p>Os registros mais recentes aparecem primeiro.</p>
+        </div>
+        <span class="contador"><?= $consultaOk ? count($movimentacoes) . ' registro(s)' : 'Indisponível' ?></span>
+      </div>
+
+      <?php if ($erroConsulta !== ''): ?>
+        <div class="mensagem-vazia" role="alert">
+          <h3>Histórico indisponível</h3>
+          <p><?= $h($erroConsulta) ?></p>
+        </div>
+      <?php elseif (!$movimentacoes): ?>
+        <div class="mensagem-vazia">
+          <h3>Nenhuma movimentação encontrada</h3>
+          <p>Não existem registros para os filtros selecionados.</p>
+        </div>
+      <?php else: ?>
+        <div class="tabela-responsiva">
+          <table>
+            <thead>
+              <tr>
+                <th>Data e hora</th>
+                <th>Componente</th>
+                <th>Tipo</th>
+                <th>Quantidade</th>
+                <th>Projeto</th>
+                <th>Observação</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($movimentacoes as $movimentacao):
+                $tipoAtual = $tiposExibicao[$movimentacao['tipo_movimentacao']] ?? ['nome' => $movimentacao['tipo_movimentacao'], 'classe' => 'saida'];
+              ?>
+                <tr>
+                  <td class="data"><?= $h(date('d/m/Y H:i', strtotime($movimentacao['data_movimentacao']))) ?></td>
+                  <td><strong><?= $h($movimentacao['componente_nome']) ?></strong><small><?= $h($movimentacao['componente_codigo'] ?: 'Sem código') ?></small></td>
+                  <td><span class="etiqueta <?= $h($tipoAtual['classe']) ?>"><?= $h($tipoAtual['nome']) ?></span></td>
+                  <td><?= $h($movimentacao['quantidade']) ?></td>
+                  <td><?= $h($movimentacao['projeto_nome'] ?: '—') ?></td>
+                  <td class="observacao"><?= $h($movimentacao['observacao'] ?: 'Sem observação') ?></td>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+        <?php if (count($movimentacoes) === 200): ?>
+          <p class="aviso-limite">Exibindo os 200 registros mais recentes. Utilize os filtros para refinar a pesquisa.</p>
+        <?php endif; ?>
+      <?php endif; ?>
+    </section>
+
+    <p class="rodape">O histórico apresenta as movimentações salvas no banco de dados.</p>
+  </main>
 </body>
-
 </html>
