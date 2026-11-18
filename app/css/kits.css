@@ -5,20 +5,24 @@
 }
 
 body {
-    min-height: 100vh;
-    background-color: #03050a;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #e2e8f0;
+    background-color: #19294a;
     background-image:
-        radial-gradient(ellipse at 15% 30%, rgba(35, 85, 180, 0.22), transparent 45%),
-        radial-gradient(ellipse at 85% 65%, rgba(25, 65, 150, 0.17), transparent 42%),
-        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-        linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-        linear-gradient(180deg, #0b101c, #03050a 75%);
+        radial-gradient(ellipse at 15% 30%, rgba(45, 105, 210, 0.30), transparent 45%),
+        radial-gradient(ellipse at 85% 65%, rgba(40, 85, 190, 0.25), transparent 42%),
+        linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(180deg, #111d35, #262d3b 75%);
     background-size: auto, auto, 40px 40px, 40px 40px, 200px 200px, 200px 200px, 100% 100%;
     background-attachment: fixed;
-    color: #ffffff;
-    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    justify-content: center;
+    align-items: center;
 }
 
 .app-robo {
@@ -249,7 +253,16 @@ main {
 }
 
 .text-cabecalho {
-    color: #00cfff;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    background: linear-gradient(200deg, #0084ff 0%, #60a5fa 50%, #ffffff 100%); /* Deixa o fundo com degrade*/
+
+    -webkit-background-clip: text; /* Recorta o fundo exatamente no formato das letras */
+    background-clip: text;
+
+    -webkit-text-fill-color: transparent; /* Deixa a cor original da fonte transparente para o degradê aparecer */
+    color: transparent;
+
+    display: inline-block; /* Garante que o degradê acompanhe apenas a largura do texto */
 }
 
 .text2-cabecalho {
@@ -270,7 +283,7 @@ main {
     max-width: 390px;
     display: flex;
     flex-direction: column;
-    border: 2px solid #1e293b;
+    border: 2px solid black;
     border-radius: 15px;
     padding: 25px;
     margin: 20px;
@@ -316,6 +329,7 @@ main {
     margin-bottom: 10px;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     font-size: 36px;
+    pointer-events: none;
 }
 
 .p-card {
