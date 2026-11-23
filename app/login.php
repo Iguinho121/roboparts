@@ -190,6 +190,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </footer>
+
+    <!-- Olho -->
+    <script>
+        const campoSenha = document.getElementById('senha');
+        const btnOlhinho = document.getElementById('btn-olhinho');
+
+        btnOlhinho.addEventListener('click', function() {
+            if (campoSenha.type === 'password') {
+                campoSenha.type = 'text';
+                btnOlhinho.textContent = 'visibility_off';
+            } else {
+                campoSenha.type = 'password';
+                btnOlhinho.textContent = 'visibility';
+            }
+        });
+    </script>
 </body>
 
 </html>
