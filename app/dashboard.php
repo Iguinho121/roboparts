@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/init.php';
+require_once __DIR__ . '/auth.php';
+exigirLogin();
 
 // Busca os dados principais usando o crud.php
 $componentes = readAll($pdo, 'componentes');
@@ -38,16 +40,16 @@ $projetosRecentes = array_slice($projetos, 0, 4);
 
 // Mapas de cores para os badges
 $badgesMov = [
-    'Entrada'    => 'badge-entrada',
-    'Saida'      => 'badge-saida',
+    'Entrada' => 'badge-entrada',
+    'Saida' => 'badge-saida',
     'Emprestimo' => 'badge-emprestimo',
-    'Devolucao'  => 'badge-devolucao',
+    'Devolucao' => 'badge-devolucao',
 ];
 
 $badgesProjeto = [
     'Em andamento' => 'badge-entrada',
     'Planejamento' => 'badge-devolucao',
-    'Concluido'    => 'badge-concluido',
+    'Concluido' => 'badge-concluido',
 ];
 ?>
 
@@ -77,7 +79,7 @@ $badgesProjeto = [
             <ul class="sidebar-menu">
 
                 <li class="active">
-                    <a href="index.php">
+                    <a href="dashboard.php">
                         <span class="material-symbols-outlined menu-icon">dashboard</span>
                         <span>Dashboard</span>
                     </a>
@@ -90,12 +92,14 @@ $badgesProjeto = [
                     </a>
                 </li>
 
-                <li>
-                    <a href="adicionar_componente.php">
-                        <span class="material-symbols-outlined menu-icon">add_circle</span>
-                        <span>Cadastro</span>
-                    </a>
-                </li>
+                <?php if (isAdmin()): ?>
+                    <li>
+                        <a href="adicionar_componente.php">
+                            <span class="material-symbols-outlined menu-icon">add_circle</span>
+                            <span>Cadastro</span>
+                        </a>
+                    </li>
+                <?php endif; ?>
 
                 <li>
                     <a href="#">
@@ -122,6 +126,13 @@ $badgesProjeto = [
                     <a href="kits.php">
                         <span class="material-symbols-outlined menu-icon">inventory_2</span>
                         <span>Kits e Catálogos</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="logout.php">
+                        <span class="material-symbols-outlined menu-icon">logout</span>
+                        <span>Sair</span>
                     </a>
                 </li>
 
@@ -158,27 +169,31 @@ $badgesProjeto = [
             </header>
 
             <!-- Cards de Resumo (KPIs) -->
-            <section class="cards-resumo">
+            <section class="cards-resumo" <?= !isAdmin() ? 'style="grid-template-columns: repeat(3, 1fr);"' : '' ?>>
 
                 <div class="kpi-card">
                     <div class="kpi-topo">
                         <span class="kpi-titulo">Unidades Disponíveis</span>
                         <span class="material-symbols-outlined kpi-icone azul">memory</span>
                     </div>
-                    <strong class="kpi-valor"><?= $disponiveisUnidades ?> <small>/ <?= $totalUnidades ?></small></strong>
+                    <strong class="kpi-valor"><?= $disponiveisUnidades ?> <small>/
+                            <?= $totalUnidades ?></small></strong>
                     <span class="kpi-sub"><?= count($componentes) ?> tipos de componentes cadastrados</span>
                 </div>
 
-                <a href="componentes.php?estoque_baixo=1" class="kpi-card kpi-link <?= count($itensEstoqueBaixo) > 0 ? 'kpi-alerta' : '' ?>">
-                    <div class="kpi-topo">
-                        <span class="kpi-titulo">Estoque Baixo</span>
-                        <span class="material-symbols-outlined kpi-icone amarelo">warning</span>
-                    </div>
-                    <strong class="kpi-valor"><?= count($itensEstoqueBaixo) ?></strong>
-                    <span class="kpi-sub">
-                        <?= count($itensEstoqueBaixo) > 0 ? 'Clique para ver itens críticos' : 'Todos os níveis normais' ?>
-                    </span>
-                </a>
+                <?php if (isAdmin()): ?>
+                    <a href="componentes.php?estoque_baixo=1"
+                        class="kpi-card kpi-link <?= count($itensEstoqueBaixo) > 0 ? 'kpi-alerta' : '' ?>">
+                        <div class="kpi-topo">
+                            <span class="kpi-titulo">Estoque Baixo</span>
+                            <span class="material-symbols-outlined kpi-icone amarelo">warning</span>
+                        </div>
+                        <strong class="kpi-valor"><?= count($itensEstoqueBaixo) ?></strong>
+                        <span class="kpi-sub">
+                            <?= count($itensEstoqueBaixo) > 0 ? 'Clique para ver itens críticos' : 'Todos os níveis normais' ?>
+                        </span>
+                    </a>
+                <?php endif; ?>
 
                 <div class="kpi-card">
                     <div class="kpi-topo">
@@ -221,7 +236,7 @@ $badgesProjeto = [
                                     $comp = read($pdo, 'componentes', 'id = ?', [$mov['componente_id']]);
                                     $proj = $mov['projeto_id'] ? read($pdo, 'projetos', 'id = ?', [$mov['projeto_id']]) : null;
                                     $classeBadge = $badgesMov[$mov['tipo_movimentacao']] ?? 'badge-entrada';
-                                ?>
+                                    ?>
                                     <div class="mov-item">
                                         <div class="mov-info">
                                             <strong><?= htmlspecialchars($comp['nome'] ?? 'Componente removido') ?></strong>
@@ -231,7 +246,8 @@ $badgesProjeto = [
                                         </div>
 
                                         <div class="mov-meta">
-                                            <span class="badge <?= $classeBadge ?>"><?= htmlspecialchars($mov['tipo_movimentacao']) ?></span>
+                                            <span
+                                                class="badge <?= $classeBadge ?>"><?= htmlspecialchars($mov['tipo_movimentacao']) ?></span>
                                             <strong class="mov-qtd"><?= $mov['quantidade'] ?> un.</strong>
                                             <small><?= date('d/m/Y H:i', strtotime($mov['data_movimentacao'])) ?></small>
                                         </div>
@@ -259,7 +275,7 @@ $badgesProjeto = [
                                     $itensProj = readAll($pdo, 'projeto_componentes', 'projeto_id = ?', [$proj['id']]);
                                     $classeStatus = $badgesProjeto[$proj['status']] ?? 'badge-devolucao';
                                     $dataInicio = $proj['data_inicio'] ? date('d/m/Y', strtotime($proj['data_inicio'])) : 'Sem data';
-                                ?>
+                                    ?>
                                     <div class="mov-item">
                                         <div class="mov-info">
                                             <strong><?= htmlspecialchars($proj['nome']) ?></strong>
@@ -267,7 +283,8 @@ $badgesProjeto = [
                                         </div>
 
                                         <div class="mov-meta">
-                                            <span class="badge <?= $classeStatus ?>"><?= htmlspecialchars($proj['status']) ?></span>
+                                            <span
+                                                class="badge <?= $classeStatus ?>"><?= htmlspecialchars($proj['status']) ?></span>
                                             <strong class="mov-qtd"><?= count($itensProj) ?> itens</strong>
                                             <small>Início: <?= $dataInicio ?></small>
                                         </div>
@@ -282,31 +299,61 @@ $badgesProjeto = [
                 <!-- Alertas e Atalhos -->
                 <div class="coluna-lateral">
 
-                    <!-- Alerta de Estoque Baixo -->
-                    <div class="painel-box">
-                        <div class="painel-header">
-                            <h2>
-                                <span class="material-symbols-outlined icone-aviso">warning</span>
-                                Atenção no Estoque
-                            </h2>
-                        </div>
+                    <?php if (isAdmin()): ?>
+                        <!-- Alerta de Estoque Baixo (Apenas Admin) -->
+                        <div class="painel-box">
+                            <div class="painel-header">
+                                <h2>
+                                    <span class="material-symbols-outlined icone-aviso">warning</span>
+                                    Atenção no Estoque
+                                </h2>
+                            </div>
 
-                        <?php if (count($itensEstoqueBaixo) == 0): ?>
-                            <p class="texto-vazio">Nenhum componente abaixo do estoque mínimo.</p>
-                        <?php else: ?>
-                            <ul class="lista-alertas">
-                                <?php foreach ($itensEstoqueBaixo as $item): ?>
-                                    <li>
-                                        <div>
-                                            <strong><?= htmlspecialchars($item['nome']) ?></strong>
-                                            <small>Mínimo exigido: <?= $item['estoque_minimo'] ?> un.</small>
-                                        </div>
-                                        <span class="pill-critico"><?= $item['quantidade_disponivel'] ?> un.</span>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        <?php endif; ?>
-                    </div>
+                            <?php if (count($itensEstoqueBaixo) == 0): ?>
+                                <p class="texto-vazio">Nenhum componente abaixo do estoque mínimo.</p>
+                            <?php else: ?>
+                                <ul class="lista-alertas">
+                                    <?php foreach ($itensEstoqueBaixo as $item): ?>
+                                        <li>
+                                            <div>
+                                                <strong><?= htmlspecialchars($item['nome']) ?></strong>
+                                                <small>Mínimo exigido: <?= $item['estoque_minimo'] ?> un.</small>
+                                            </div>
+                                            <span class="pill-critico"><?= $item['quantidade_disponivel'] ?> un.</span>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
+                        </div>
+                    <?php else: ?>
+                        <!-- Kits Disponíveis (Apenas Usuário Comum) -->
+                        <div class="painel-box">
+                            <div class="painel-header">
+                                <h2>
+                                    <span class="material-symbols-outlined">inventory_2</span>
+                                    Kits Disponíveis
+                                </h2>
+                                <a href="kits.php" class="link-ver-todos">Ver todos →</a>
+                            </div>
+
+                            <?php if (count($kits) == 0): ?>
+                                <p class="texto-vazio">Nenhum kit configurado no momento.</p>
+                            <?php else: ?>
+                                <ul class="lista-alertas">
+                                    <?php foreach (array_slice($kits, 0, 3) as $kit): ?>
+                                        <li>
+                                            <div>
+                                                <strong><?= htmlspecialchars($kit['nome']) ?></strong>
+                                                <small><?= htmlspecialchars($kit['descricao'] ?? 'Pronto para requisição') ?></small>
+                                            </div>
+                                            <a href="kits.php" class="badge badge-entrada"
+                                                style="text-decoration: none;">Requisitar</a>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
 
                     <!-- Atalhos Rápidos -->
                     <div class="painel-box">
@@ -318,17 +365,26 @@ $badgesProjeto = [
                         </div>
 
                         <div class="atalhos-grid">
-                            <a href="adicionar_componente.php" class="btn-atalho primario">
-                                <span class="material-symbols-outlined">add_circle</span>
-                                Cadastrar Peça
-                            </a>
-                            <a href="kits.php" class="btn-atalho">
-                                <span class="material-symbols-outlined">inventory_2</span>
-                                Requisitar Kit
-                            </a>
+                            <?php if (isAdmin()): ?>
+                                <a href="adicionar_componente.php" class="btn-atalho primario">
+                                    <span class="material-symbols-outlined">add_circle</span>
+                                    Cadastrar Peça
+                                </a>
+                            <?php else: ?>
+                                <a href="kits.php" class="btn-atalho primario">
+                                    <span class="material-symbols-outlined">inventory_2</span>
+                                    Requisitar Kit
+                                </a>
+                            <?php endif; ?>
+
                             <a href="componentes.php" class="btn-atalho">
                                 <span class="material-symbols-outlined">search</span>
                                 Consultar Estoque
+                            </a>
+
+                            <a href="#" class="btn-atalho">
+                                <span class="material-symbols-outlined">swap_horiz</span>
+                                Solicitar Empréstimo
                             </a>
                         </div>
                     </div>

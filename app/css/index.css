@@ -7,26 +7,24 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: #e2e8f0;
-    
-    background-color: #03050a;
+    background-color: #19294a;
     background-image:
-        radial-gradient(ellipse at 15% 30%, rgba(35, 85, 180, 0.22), transparent 45%),
-        radial-gradient(ellipse at 85% 65%, rgba(25, 65, 150, 0.17), transparent 42%),
-        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-        linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-        linear-gradient(180deg, #0b101c, #03050a 75%);
+        radial-gradient(ellipse at 15% 30%, rgba(45, 105, 210, 0.30), transparent 45%),
+        radial-gradient(ellipse at 85% 65%, rgba(40, 85, 190, 0.25), transparent 42%),
+        linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(180deg, #111d35, #262d3b 75%);
     background-size: auto, auto, 40px 40px, 40px 40px, 200px 200px, 200px 200px, 100% 100%;
     background-attachment: fixed;
-    
     display: flex;
     flex-direction: column;
     min-height: 100vh;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    padding: 20px;
+
 }
 
 .container-principal {
@@ -34,9 +32,11 @@ body {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    max-width: 1000px;
-    gap: 50px;
+    max-width: 60vw;
+    gap: 100px;
+    padding: 2.5rem;
     margin: auto;
+    min-height: 100vh;
 }
 
 .info-esquerda {
@@ -122,7 +122,7 @@ body {
 
 .texto-recurso p {
     font-size: 14px;
-    color: #64748b;
+    color: #8ca2c2;
     line-height: 1.4;
 }
 
@@ -132,7 +132,7 @@ form {
     border-radius: 12px;
     padding: 35px;
     width: 100%;
-    max-width: 380px;
+    max-width: 480px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
@@ -254,7 +254,7 @@ input[type="password"] {
     width: 100%;
     font-family: inherit;
     font-size: 15px;
-    padding: 12px 44px 12px 44px; 
+    padding: 12px 44px 12px 44px;
     background-color: #1e293b;
     border: 1px solid #334155;
     border-radius: 8px;
@@ -288,7 +288,7 @@ input:focus-visible {
 
 .icone-check {
     font-size: 14px;
-    color: #64748b; 
+    color: #64748b;
 }
 
 button {
@@ -343,7 +343,7 @@ button:focus-visible {
         justify-content: center;
         gap: 60px;
     }
-    
+
     .info-esquerda {
         align-items: center;
         text-align: center;
@@ -358,15 +358,16 @@ button:focus-visible {
 @keyframes surgirSuave {
     from {
         opacity: 0;
-        transform: translateY(15px); 
+        transform: translateY(15px);
     }
+
     to {
         opacity: 1;
-        transform: translateY(0);    
+        transform: translateY(0);
     }
 }
 
-/* Animação nas duas paginas  */
+/* Animação nas duas paginas */
 .container-principal {
     animation: surgirSuave 0.4s ease-out forwards;
 }
@@ -385,7 +386,7 @@ button:focus-visible {
 
 .card-alerta-sistema {
     margin-top: 40px;
-    background-color: rgba(15, 23, 42, 0.6); 
+    background-color: rgba(15, 23, 42, 0.6);
     border: 1px solid #1e293b;
     border-radius: 10px;
     padding: 16px;
@@ -403,7 +404,7 @@ button:focus-visible {
     top: 0;
     bottom: 0;
     width: 4px;
-    background-color: #f59e0b; 
+    background-color: #f59e0b;
 }
 
 .alerta-cabecalho {
@@ -425,7 +426,7 @@ button:focus-visible {
     font-size: 13px;
     color: #94a3b8;
     line-height: 1.5;
-    padding-left: 26px; 
+    padding-left: 26px;
 }
 
 .alerta-corpo strong {
@@ -436,24 +437,24 @@ button:focus-visible {
 
 /* 
 (FOOTER)
- */
+ */
 
 .rodape-avancado {
     background-color: #030712;
     border-top: 2px solid #1e293b;
-    padding: 25px; 
+    padding: 25px;
     font-family: Arial, sans-serif;
-    
+
     width: 100%;
     box-sizing: border-box;
-    margin-top: auto; 
+    margin-top: auto;
 }
 
 .rodape-conteudo {
     max-width: 1200px;
     margin: 0 auto;
     display: flex;
-    justify-content: flex-start; 
+    justify-content: flex-start;
     gap: 40px;
 }
 
@@ -496,22 +497,24 @@ button:focus-visible {
 }
 
 .rodape-comunidade span {
-    font-size: 18px; /* Tamanho do ícone do FOOTER */
+    font-size: 18px;
+    /* Tamanho do ícone do FOOTER */
 }
 
 .rodape-menus {
     display: flex;
-    gap: 60px; 
+    gap: 60px;
     flex-wrap: wrap;
-    margin: 0 auto; 
-    padding-top: 20px; 
+    margin: 0 auto;
+    padding-top: 20px;
 }
 
 .rodape-coluna {
     display: flex;
     flex-direction: column;
-    gap: 8px; 
+    gap: 8px;
 }
+
 .rodape-coluna h4 {
     color: #64748b;
     font-size: 12px;
@@ -531,4 +534,3 @@ button:focus-visible {
 .rodape-coluna a:hover {
     color: #ffffff;
 }
-

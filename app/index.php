@@ -11,8 +11,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$mensagem = '';
-$tipoMensagem = '';
+$mensagem = '';$tipoMensagem = '';
 
 try {
     require_once __DIR__ . '/init.php';
@@ -21,34 +20,29 @@ try {
         
         $nome = trim($_POST['nome'] ?? '');
         $email = trim($_POST['email'] ?? '');
-        $senha = $_POST['senha'] ?? '';
+        $senha =$_POST['senha'] ?? '';
 
         if (empty($nome) || empty($email) || empty($senha)) {
-            $mensagem = 'Por favor, preencha todos os campos.';
-            $tipoMensagem = 'erro';
+            $mensagem = 'Por favor, preencha todos os campos.';$tipoMensagem = 'erro';
             
         } else {
-            $stmt = $pdo->prepare('SELECT id FROM usuarios WHERE email = :email');
-            $stmt->execute(['email' => $email]);
+            $stmt =$pdo->prepare('SELECT id FROM usuarios WHERE email = :email');
+            $stmt->execute(['email' =>$email]);
             
-            if ($stmt->fetch()) {
-                $mensagem = 'Este e-mail já está cadastrado. Vá para a aba "Entrar".';
+            if ($stmt->fetch()) {$mensagem = 'Este e-mail já está cadastrado. Vá para a aba "Entrar".';
                 $tipoMensagem = 'erro';
                 
             } else {
-                $senhaCriptografada = password_hash($senha, PASSWORD_DEFAULT);
-                
-                $sql = 'INSERT INTO usuarios (nome, email, senha, tipo_usuario) VALUES (:nome, :email, :senha, "Comum")';
+                $senhaCriptografada = password_hash($senha, PASSWORD_DEFAULT);$sql = 'INSERT INTO usuarios (nome, email, senha, tipo_usuario) VALUES (:nome, :email, :senha, "Comum")';
                 $inserir = $pdo->prepare($sql);
                 
-                $sucesso = $inserir->execute([
+                $sucesso =$inserir->execute([
                     'nome' => $nome,
                     'email' => $email,
                     'senha' => $senhaCriptografada
                 ]);
                 
-                if ($sucesso) {
-                    $mensagem = 'Conta criada com sucesso! Vá para a aba "Entrar" para aceder ao sistema.';
+                if ($sucesso) {$mensagem = 'Conta criada com sucesso! Vá para a aba "Entrar" para aceder ao sistema.';
                     $tipoMensagem = 'sucesso';
                 } else {
                     $mensagem = 'Erro ao criar a conta. Tente novamente.';
@@ -57,9 +51,7 @@ try {
             }
         }
     }
-} catch (Throwable $exception) {
-    $mensagem = 'Erro no BD: ' . $exception->getMessage();
-    $tipoMensagem = 'erro';
+} catch (Throwable $exception) {$mensagem = 'Erro no BD: ' . $exception->getMessage();$tipoMensagem = 'erro';
 }
 ?>
 <!DOCTYPE html>
@@ -128,7 +120,7 @@ try {
 
             <div class="seletor-abas">
                 <a href="login.php" class="aba">Entrar</a>
-                <a href="cadastro.php" class="aba ativa">Criar conta</a>
+                <a href="index.php" class="aba ativa">Criar conta</a>
             </div>
 
             <div class="cabecalho-form">
@@ -168,7 +160,8 @@ try {
                 <div class="input-com-icone">
                     <span class="material-symbols-outlined icone-input">lock</span>
                     <input type="password" id="senha" name="senha" placeholder="••••••••" required>
-                    <span class="material-symbols-outlined icone-senha-olho">visibility</span>
+                    
+                    <span class="material-symbols-outlined icone-senha-olho" id="btn-olhinho">visibility</span>
                 </div>
                 <div class="requisitos-senha">
                     <span class="requisito"><span class="material-symbols-outlined icone-check">check</span> 8+ caracteres</span>
@@ -211,7 +204,7 @@ try {
                 <div class="rodape-coluna">
                     <h4>Conta</h4>
                     <a href="login.php">Entrar</a>
-                    <a href="cadastro.php">Criar conta</a>
+                    <a href="index.php">Criar conta</a>
                 </div>
 
                 <div class="rodape-coluna">
@@ -228,5 +221,21 @@ try {
             </div>
         </div>
     </footer>
+
+    <!-- Olho -->
+    <script>
+        const campoSenha = document.getElementById('senha');
+        const btnOlhinho = document.getElementById('btn-olhinho');
+
+        btnOlhinho.addEventListener('click', function() {
+            if (campoSenha.type === 'password') {
+                campoSenha.type = 'text';
+                btnOlhinho.textContent = 'visibility_off';
+            } else {
+                campoSenha.type = 'password';
+                btnOlhinho.textContent = 'visibility';
+            }
+        });
+    </script>
 </body>
 </html>

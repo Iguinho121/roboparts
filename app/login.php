@@ -1,38 +1,46 @@
 <?php
-session_start();
+require_once __DIR__ . '/init.php';
 
-// Se caso ele ja estiver logado ele redireciona para o dashboard
+// Se já estiver logado, redireciona direto para o dashboard
 if (isset($_SESSION['usuario_id'])) {
-    header('Location: dashboard.php'); 
+    header('Location: dashboard.php');
     exit;
 }
 
 $erro = '';
+$email = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    require_once __DIR__ . '/init.php';
-
     $email = trim($_POST['email'] ?? '');
     $senha = $_POST['senha'] ?? '';
 
     if (empty($email) || empty($senha)) {
         $erro = 'Por favor, preencha todos os campos.';
     } else {
-       
         $stmt = $pdo->prepare('SELECT * FROM usuarios WHERE email = :email LIMIT 1');
         $stmt->execute(['email' => $email]);
         $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        
-        if ($usuario && password_verify($senha, $usuario['senha'])) {
-            
-            
-            $_SESSION['usuario_id'] = $usuario['id'];
-            $_SESSION['usuario_nome'] = $usuario['nome'];
+        $senhaValida = false;
+
+        if ($usuario) {
+            if (password_verify($senha, $usuario['senha'])) {
+                $senhaValida = true;
+            } elseif ($senha === $usuario['senha']) {
+                $senhaValida = true;
+                $novoHash = password_hash($senha, PASSWORD_DEFAULT);
+                $upd = $pdo->prepare('UPDATE usuarios SET senha = :senha WHERE id = :id');
+                $upd->execute(['senha' => $novoHash, 'id' => $usuario['id']]);
+            }
+        }
+
+        if ($senhaValida) {
+            $_SESSION['usuario_id']    = $usuario['id'];
+            $_SESSION['usuario_nome']  = $usuario['nome'];
             $_SESSION['usuario_email'] = $usuario['email'];
-            
-            // Volta para o cadastro
-            header('Location: dashboard.php'); 
+            $_SESSION['tipo_usuario']  = $usuario['tipo_usuario'];
+
+            header('Location: dashboard.php');
             exit;
         } else {
             $erro = 'E-mail ou senha incorretos.';
@@ -104,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="seletor-abas">
                 <a href="login.php" class="aba ativa">Entrar</a>
-                <a href="cadastro.php" class="aba">Criar conta</a>
+                <a href="index.php" class="aba">Criar conta</a>
             </div>
 
             <div class="cabecalho-form">
@@ -124,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="email">E-mail</label>
                 <div class="input-com-icone">
                     <span class="material-symbols-outlined icone-input">mail</span>
-                    <input type="email" id="email" name="email" placeholder="nome@dominio.com" required>
+                    <input type="email" id="email" name="email" value="<?= htmlspecialchars($email) ?>" placeholder="nome@dominio.com" required>
                 </div>
             </div>
 
@@ -136,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="input-com-icone">
                     <span class="material-symbols-outlined icone-input">lock</span>
                     <input type="password" id="senha" name="senha" placeholder="••••••••" required>
-                    <span class="material-symbols-outlined icone-senha-olho">visibility</span>
+                    <span class="material-symbols-outlined icone-senha-olho" id="btn-olhinho">visibility</span>
                 </div>
             </div>
 
@@ -190,6 +198,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </footer>
+
+    <!-- Olho -->
+    <script>
+        const campoSenha = document.getElementById('senha');
+        const btnOlhinho = document.getElementById('btn-olhinho');
+
+        btnOlhinho.addEventListener('click', function() {
+            if (campoSenha.type === 'password') {
+                campoSenha.type = 'text';
+                btnOlhinho.textContent = 'visibility_off';
+            } else {
+                campoSenha.type = 'password';
+                btnOlhinho.textContent = 'visibility';
+            }
+        });
+    </script>
 </body>
 
 </html>
