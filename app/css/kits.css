@@ -254,15 +254,19 @@ main {
 
 .text-cabecalho {
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-    background: linear-gradient(200deg, #0084ff 0%, #60a5fa 50%, #ffffff 100%); /* Deixa o fundo com degrade*/
+    background: linear-gradient(200deg, #0084ff 0%, #60a5fa 50%, #ffffff 100%);
+    /* Deixa o fundo com degrade*/
 
-    -webkit-background-clip: text; /* Recorta o fundo exatamente no formato das letras */
+    -webkit-background-clip: text;
+    /* Recorta o fundo exatamente no formato das letras */
     background-clip: text;
 
-    -webkit-text-fill-color: transparent; /* Deixa a cor original da fonte transparente para o degradê aparecer */
+    -webkit-text-fill-color: transparent;
+    /* Deixa a cor original da fonte transparente para o degradê aparecer */
     color: transparent;
 
-    display: inline-block; /* Garante que o degradê acompanhe apenas a largura do texto */
+    display: inline-block;
+    /* Garante que o degradê acompanhe apenas a largura do texto */
 }
 
 .text2-cabecalho {
@@ -398,25 +402,59 @@ main {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     transition: all 0.1s ease;
+
 }
 
-.botao:hover {
+.botao:hover{
     background-color: #38D9F5;
     transform: translateY(2px);
+
 }
 
-.botao-indisponivel {
+/* Caixa flutuante de confirmação */
+.modal-flux {
+    background-color: #0b1622;
+    color: #ffffff;
+    border: 1px solid #18B8D9;
+    border-radius: 15px;
+    padding: 25px;
+    max-width: 530px;
+    width: 90%;
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    inset: 0;
+    margin: auto;
+    height: fit-content;
+}
+
+/* Fundo escuro atrás da janela */
+.modal-flux::backdrop {
+    background: rgba(7, 17, 26, 0.8);
+    backdrop-filter: blur(4px);
+}
+
+.modal-flux p {
+    color: #cbd5e1;
+    font-size: 20px;
+    line-height: 1.5;
+    margin-bottom: 22px;
+}
+
+/* Alinhamento dos botões lado a lado */
+.modal-acoes {
+    display: flex;
+    gap: 12px;
+}
+
+/* Botão de cancelar herdando o estilo do seu .botao */
+.botao-cancelar {
     background-color: #1e293b;
-    color: #64748b;
-    cursor: not-allowed;
+    color: #cbd5e1;
+    transition: all 0.1s ease;
 }
 
-.botao-indisponivel:hover {
-    background-color: #1e293b;
-    transform: none;
-}
-
-.sem-kits {
-    color: #8b9bb4;
-    margin-top: 20px;
+.botao-cancelar:hover {
+    background-color: #334155;
+    transform: translateY(2px);
 }

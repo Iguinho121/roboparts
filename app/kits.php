@@ -147,7 +147,28 @@ $kits = readAll($pdo, 'kits');
                             </ul>
 
                             <?php if ($kitDisponivel && count($itensKit) > 0): ?>
-                                <a href="requisitar_kit.php?id=<?= $kit['id'] ?>" class="botao">Requisitar kit completo</a>
+                                <!-- Botão que abre o modal sem sair da página -->
+                                <button type="button" class="botao" popovertarget="modal-kit-<?= $kit['id'] ?>">
+                                    Requisitar kit completo
+                                </button>
+
+                                <!-- Caixa de confirmação exclusiva deste kit -->
+                                <div id="modal-kit-<?= $kit['id'] ?>" popover class="modal-flux">
+                                    <h3>Confirmar Requisição</h3>
+                                    <p>Deseja realmente requisitar o <strong><?= htmlspecialchars($kit['nome']) ?></strong>?</p>
+
+                                    <div class="modal-acoes">
+                                        <!-- Apenas fecha a janela -->
+                                        <button type="button" class="botao botao-cancelar" popovertarget="modal-kit-<?= $kit['id'] ?>" popovertargetaction="hide">
+                                            Cancelar
+                                        </button>
+
+                                        <!-- Leva para o seu arquivo PHP que já existe -->
+                                        <a href="requisitar_kit.php?id=<?= $kit['id'] ?>" class="botao">
+                                            Confirmar
+                                        </a>
+                                    </div>
+                                </div>
                             <?php else: ?>
                                 <button class="botao botao-indisponivel" disabled>Estoque insuficiente</button>
                             <?php endif; ?>
