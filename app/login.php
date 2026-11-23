@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="input-com-icone">
                     <span class="material-symbols-outlined icone-input">lock</span>
                     <input type="password" id="senha" name="senha" placeholder="••••••••" required>
-                    <span class="material-symbols-outlined icone-senha-olho">visibility</span>
+                    <span class="material-symbols-outlined icone-senha-olho" id="btn-olhinho">visibility</span>
                 </div>
             </div>
 
