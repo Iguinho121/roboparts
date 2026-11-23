@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="seletor-abas">
                 <a href="login.php" class="aba ativa">Entrar</a>
-                <a href="cadastro.php" class="aba">Criar conta</a>
+                <a href="index.php" class="aba">Criar conta</a>
             </div>
 
             <div class="cabecalho-form">
