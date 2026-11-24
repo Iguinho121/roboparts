@@ -6,7 +6,6 @@
 
 body {
     min-height: 100vh;
-    background-color: #03050a;
     background-image:
         radial-gradient(ellipse at 15% 30%, rgba(35, 85, 180, 0.22), transparent 45%),
         radial-gradient(ellipse at 85% 65%, rgba(25, 65, 150, 0.17), transparent 42%),
@@ -307,8 +306,8 @@ body {
     width: 100%;
     background-color: rgba(9, 14, 26, 0.7);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    backdrop-filter: blur(8px);
+    border-radius: 22px;
+    backdrop-filter: blur(12px);
 }
 
 .barra-acoes {

@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="seletor-abas">
                 <a href="login.php" class="aba ativa">Entrar</a>
-                <a href="cadastro.php" class="aba">Criar conta</a>
+                <a href="index.php" class="aba">Criar conta</a>
             </div>
 
             <div class="cabecalho-form">
@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="input-com-icone">
                     <span class="material-symbols-outlined icone-input">lock</span>
                     <input type="password" id="senha" name="senha" placeholder="••••••••" required>
-                    <span class="material-symbols-outlined icone-senha-olho">visibility</span>
+                    <span class="material-symbols-outlined icone-senha-olho" id="btn-olhinho">visibility</span>
                 </div>
             </div>
 
@@ -190,6 +190,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </footer>
+
+    <!-- Olho -->
+    <script>
+        const campoSenha = document.getElementById('senha');
+        const btnOlhinho = document.getElementById('btn-olhinho');
+
+        btnOlhinho.addEventListener('click', function() {
+            if (campoSenha.type === 'password') {
+                campoSenha.type = 'text';
+                btnOlhinho.textContent = 'visibility_off';
+            } else {
+                campoSenha.type = 'password';
+                btnOlhinho.textContent = 'visibility';
+            }
+        });
+    </script>
 </body>
 
 </html>

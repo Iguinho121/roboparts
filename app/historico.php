@@ -119,33 +119,35 @@ $h = static fn($valor): string => htmlspecialchars((string) ($valor ?? ''), ENT_
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Histórico | RoboParts</title>
+
+  <!-- ⚠️ DEPENDÊNCIA DO JAVASCRIPT (Flatpickr): remova esta linha se retirar o JS do calendário -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
   <link rel="stylesheet" href="css/historico.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..400,0..1,0">
 </head>
 <body>
-  <nav class="sidebar" aria-label="Navegação principal">
+  <nav class="sidebar" id="glassSidebar" aria-label="Navegação principal">
+    <div class="sidebar-glass-sheen" aria-hidden="true"></div>
+
     <a class="sidebar-logo" href="index.php" aria-label="Flux - início">
       <img src="imagens/logoflux.png" alt="Logo Flux">
       <span>LUX</span>
     </a>
 
     <ul class="sidebar-menu">
-      <li><a href="index.php"><span class="material-symbols-outlined menu-icon">dashboard</span><span>Dashboard</span></a></li>
+      <li><a href="dashboard.php"><span class="material-symbols-outlined menu-icon">dashboard</span><span>Dashboard</span></a></li>
       <li><a href="componentes.php"><span class="material-symbols-outlined menu-icon">memory</span><span>Componentes</span></a></li>
-      <li><a href="adicionar_componente.php"><span class="material-symbols-outlined menu-icon">add_circle</span><span>Cadastro</span></a></li>
-      <li><a href="#" aria-disabled="true" title="Página ainda não disponível"><span class="material-symbols-outlined menu-icon">swap_horiz</span><span>Empréstimo</span></a></li>
-      <li><a href="#" aria-disabled="true" title="Página ainda não disponível"><span class="material-symbols-outlined menu-icon">folder</span><span>Projetos</span></a></li>
+      <li><a href="index.php"><span class="material-symbols-outlined menu-icon">add_circle</span><span>Cadastro</span></a></li>
+      <li><a href="projetos.php"><span class="material-symbols-outlined menu-icon">folder</span><span>Projetos</span></a></li>
       <li class="active"><a href="historico.php" aria-current="page"><span class="material-symbols-outlined menu-icon">history</span><span>Histórico</span></a></li>
-      <li><a href="#" aria-disabled="true" title="Página ainda não disponível"><span class="material-symbols-outlined menu-icon">inventory_2</span><span>Kits e Catálogos</span></a></li>
+      <li><a href="kits.php"><span class="material-symbols-outlined menu-icon">inventory_2</span><span>Kits e Catálogos</span></a></li>
     </ul>
 
-    <div class="sidebar-card">
-      <img src="imagens/robozin.png" alt="Robô Flux">
-      <h3>Flux</h3>
-      <span class="robo-descricao">Inovação em<br>cada componente.</span>
-    </div>
-
-    <div class="sidebar-status"><span class="status-bolinha"></span><p>Sistema Operacional <strong>v1.0</strong></p></div>
+    <a class="sidebar-logout" href="logout.php" aria-label="Sair do sistema">
+      <span class="material-symbols-outlined menu-icon">logout</span>
+      <span>Sair</span>
+    </a>
   </nav>
 
   <main class="pagina">
@@ -265,5 +267,98 @@ $h = static fn($valor): string => htmlspecialchars((string) ($valor ?? ''), ENT_
 
     <p class="rodape">O histórico apresenta as movimentações salvas no banco de dados.</p>
   </main>
+
+  <!-- =========================================================
+       ⚠️ INÍCIO JAVASCRIPT 1 - BRILHO INTERATIVO NA SIDEBAR
+       (Opcional: pode apagar este bloco se não usar JS)
+       ========================================================= -->
+  <script>
+    (() => {
+      const sidebar = document.getElementById('glassSidebar');
+      if (!sidebar) return;
+
+      sidebar.addEventListener('pointermove', (e) => {
+        const rect = sidebar.getBoundingClientRect();
+        sidebar.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+        sidebar.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+      });
+    })();
+  </script>
+  <!-- ⚠️ FIM JAVASCRIPT 1 -->
+
+  <!-- =========================================================
+       ⚠️ INÍCIO JAVASCRIPT 2 - CALENDÁRIO E SELECT LIQUID GLASS
+       (Opcional: pode apagar este bloco se não usar JS;
+        os filtros continuam funcionando com HTML/CSS nativos)
+       ========================================================= -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+  <script>
+    /* Calendário moderno (Flatpickr) em português */
+    flatpickr('.campo input[type="date"]', {
+      locale: 'pt',
+      altInput: true,
+      altFormat: 'd/m/Y',
+      dateFormat: 'Y-m-d',
+      allowInput: false
+    });
+
+    /* Dropdown Liquid Glass sincronizado com o <select> */
+    document.querySelectorAll('.campo select').forEach((select) => {
+      select.classList.add('glass-select-native');
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'glass-select';
+
+      const trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'glass-select-trigger';
+      trigger.innerHTML = `
+        <span>${select.options[select.selectedIndex]?.text || 'Selecione'}</span>
+        <svg class="glass-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      `;
+
+      const menu = document.createElement('div');
+      menu.className = 'glass-select-menu';
+
+      Array.from(select.options).forEach((opt, idx) => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'glass-select-option' + (idx === select.selectedIndex ? ' selected' : '');
+        item.textContent = opt.text;
+
+        item.addEventListener('click', () => {
+          select.value = opt.value;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+          trigger.querySelector('span').textContent = opt.text;
+          menu.querySelectorAll('.glass-select-option').forEach((el) => el.classList.remove('selected'));
+          item.classList.add('selected');
+          wrapper.classList.remove('open');
+        });
+
+        menu.appendChild(item);
+      });
+
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.glass-select.open').forEach((el) => {
+          if (el !== wrapper) el.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+      });
+
+      wrapper.appendChild(trigger);
+      wrapper.appendChild(menu);
+      select.parentNode.insertBefore(wrapper, select.nextSibling);
+    });
+
+    /* Fecha o menu se clicar fora */
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.glass-select.open').forEach((el) => el.classList.remove('open'));
+    });
+  </script>
+  <!-- ⚠️ FIM JAVASCRIPT 2 -->
 </body>
 </html>
