@@ -3,6 +3,10 @@ require_once __DIR__ . '/init.php';
 
 // Busca todos os kits cadastrados no banco
 $kits = readAll($pdo, 'kits');
+
+// [FILTRO] Captura o nível escolhido na URL (ex: ?nivel=Educacional). 
+// Se ninguém clicou em nenhum filtro ainda, o valor fica vazio ('').
+$filtroNivel = $_GET['nivel'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -98,9 +102,21 @@ $kits = readAll($pdo, 'kits');
         <main class="main">
 
             <header class="cabecalho">
-                <h1 class="text-cabecalho">Produtos | Robóticas</h1>
-                <h2 class="text2-cabecalho">Selecione um kit pré-configurado por tipo de projeto.</h2>
+                <div>
+                    <h1 class="text-cabecalho">Produtos | Robóticas</h1>
+                    <h2 class="text2-cabecalho">Selecione um kit pré-configurado por tipo de projeto.</h2>
+                </div>
+
+                <!-- [FILTRO] Botões movidos para dentro do header para ficarem alinhados à direita.
+                     A condição PHP dentro da class adiciona 'active' apenas no botão selecionado no momento -->
+                <div class="filtros-nivel">
+                    <a href="kits.php" class="btn-filtro <?= $filtroNivel === '' ? 'active' : '' ?>">Todos</a>
+                    <a href="?nivel=Educacional" class="btn-filtro <?= $filtroNivel === 'Educacional' ? 'active' : '' ?>" data-cor="Educacional">Educacional</a>
+                    <a href="?nivel=Intermediário" class="btn-filtro <?= $filtroNivel === 'Intermediário' ? 'active' : '' ?>" data-cor="Intermediário">Intermediário</a>
+                    <a href="?nivel=Avançado" class="btn-filtro <?= $filtroNivel === 'Avançado' ? 'active' : '' ?>" data-cor="Avançado">Avançado</a>
+                </div>
             </header>
+
 
             <div class="cards">
 
@@ -108,13 +124,22 @@ $kits = readAll($pdo, 'kits');
                     <p class="sem-kits">Nenhum kit cadastrado no momento.</p>
                 <?php else: ?>
                     <?php foreach ($kits as $kit):
+                        // [FILTRO] Se houver um filtro ativo na URL ($filtroNivel !== '') 
+                        // E o 'tipo_projeto' deste kit for diferente do filtro escolhido,
+                        // o 'continue' pula este card e vai direto para o próximo do loop.
+                        if ($filtroNivel !== '' && ($kit['tipo_projeto'] ?? '') !== $filtroNivel) {
+                            continue;
+                        }
+
                         // Busca as peças vinculadas a este kit
                         $itensKit = readAll($pdo, 'kit_componentes', 'kit_id = ?', [$kit['id']]);
                         $kitDisponivel = true;
                     ?>
                         <div class="card-kit">
                             <div class="card-org">
-                                <span class="border border-01"><?= htmlspecialchars($kit['tipo_projeto'] ?? 'Geral') ?></span>
+                                <span class="border border-01" data-nivel="<?= htmlspecialchars($kit['tipo_projeto'] ?? 'Geral') ?>">
+                                    <?= htmlspecialchars($kit['tipo_projeto'] ?? 'Geral') ?>
+                                </span>
                                 <span class="border border-02">Kit montável</span>
                             </div>
 
@@ -147,6 +172,7 @@ $kits = readAll($pdo, 'kits');
                             </ul>
 
                             <?php if ($kitDisponivel && count($itensKit) > 0): ?>
+
                                 <!-- Botão que abre o modal sem sair da página -->
                                 <button type="button" class="botao" popovertarget="modal-kit-<?= $kit['id'] ?>">
                                     Requisitar kit completo
@@ -163,7 +189,7 @@ $kits = readAll($pdo, 'kits');
                                             Cancelar
                                         </button>
 
-                                        <!-- Leva para o seu arquivo PHP que já existe -->
+                                        <!-- Leva para o arquivo -->
                                         <a href="requisitar_kit.php?id=<?= $kit['id'] ?>" class="botao">
                                             Confirmar
                                         </a>
@@ -180,6 +206,7 @@ $kits = readAll($pdo, 'kits');
 
         </main>
     </div>
+
 
 </body>
 

@@ -228,7 +228,7 @@ body {
     color: #ffffff;
 }
 
-/* ==================== CONTEÚDO PRINCIPAL ==================== */
+/* ------ CONTEÚDO PRINCIPAL ------- */
 main {
     flex: 1;
     min-width: 0;
@@ -236,11 +236,13 @@ main {
 }
 
 .cabecalho {
-    padding: 25px;
-    background-color: #090E24;
-    border: 1px solid #141E46;
-    border-radius: 20px;
-    margin-bottom: 10px;
+    padding: 24px 32px;
+    background-color: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    border-radius: 16px;
+    margin-bottom: 24px;
+    backdrop-filter: blur(8px);
+    /* Efeito de vidro fosco */
     font-family: 'Courier New', Courier, monospace;
     text-transform: uppercase;
     transition: all 0.3s ease-in-out;
@@ -254,7 +256,7 @@ main {
 
 .text-cabecalho {
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-    background: linear-gradient(200deg, #0084ff 0%, #60a5fa 50%, #ffffff 100%);
+    background: linear-gradient(90deg, #ffffff 20%, #38bdf8 100%);
     /* Deixa o fundo com degrade*/
 
     -webkit-background-clip: text;
@@ -275,7 +277,52 @@ main {
     margin-top: 6px;
 }
 
-/* ==================== CARDS DOS KITS ==================== */
+.filtros-nivel {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-filtro {
+    margin-top: 20px;
+    text-decoration: none;
+    background-color: rgba(15, 23, 42, 0.6);
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+.btn-filtro:hover {
+    transform: translateY(-4px);
+    color: #ffffff;
+    border-color: rgba(56, 189, 248, 0.5);
+}
+.btn-filtro.active {
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.5);
+  background-color: rgba(56, 189, 248, 0.15);
+}
+
+.btn-filtro.active[data-cor="Intermediário"] {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.5);
+  background-color: rgba(251, 191, 36, 0.15);
+}
+
+.btn-filtro.active[data-cor="Avançado"] {
+  color: #fb7185;
+  border-color: rgba(251, 113, 133, 0.5);
+  background-color: rgba(251, 113, 133, 0.15);
+}
+
+/* ----- CARDS DOS KITS ----- */
 .cards {
     display: flex;
     flex-wrap: wrap;
@@ -283,11 +330,13 @@ main {
 }
 
 .card-kit {
-    flex: 1 1 320px;
+    background-color: rgba(15, 23, 42, 0.75);
+    flex: 200px;
     max-width: 390px;
     display: flex;
     flex-direction: column;
-    border: 2px solid black;
+    border: 2px solid #00cfff;
+    backdrop-filter: blur(8px);
     border-radius: 15px;
     padding: 25px;
     margin: 20px;
@@ -313,6 +362,20 @@ main {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+
+[data-nivel="Intermediário"] {
+    color: #fbbf24 !important;
+    /* !important  da prioridade ao código selecionado*/
+    border-color: rgba(251, 191, 36, 0.4) !important;
+    background-color: rgba(251, 191, 36, 0.1) !important;
+}
+
+[data-nivel="Avançado"] {
+    color: #fb7185 !important;
+    border-color: rgba(251, 113, 133, 0.4) !important;
+    background-color: rgba(251, 113, 133, 0.1) !important;
 }
 
 .border-01 {
@@ -357,6 +420,7 @@ main {
 .pecas-lista {
     list-style: none;
     margin-bottom: 24px;
+
 }
 
 .pecas-lista li {
@@ -379,11 +443,11 @@ main {
 }
 
 .estoque {
-    color: #64748b;
+    color: #94a3b8;
     font-size: 12px;
 }
 
-/* ==================== BOTÃO ==================== */
+/* ------- BOTÃO -------- */
 .botao {
     display: block;
     width: 100%;
@@ -405,7 +469,7 @@ main {
 
 }
 
-.botao:hover{
+.botao:hover {
     background-color: #38D9F5;
     transform: translateY(2px);
 
@@ -419,19 +483,18 @@ main {
     border-radius: 15px;
     padding: 25px;
     max-width: 530px;
-    width: 90%;
     text-align: center;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-    inset: 0;
     margin: auto;
-    height: fit-content;
+
 }
 
-/* Fundo escuro atrás da janela */
+/* Fundo escuro atrás da caixa */
 .modal-flux::backdrop {
     background: rgba(7, 17, 26, 0.8);
     backdrop-filter: blur(4px);
+    /* Nível que fica embaçado o fundo*/
 }
 
 .modal-flux p {
