@@ -381,11 +381,7 @@ $badgesProjeto = [
                                 <span class="material-symbols-outlined">search</span>
                                 Consultar Estoque
                             </a>
-
-                            <a href="#" class="btn-atalho">
-                                <span class="material-symbols-outlined">swap_horiz</span>
-                                Solicitar Empréstimo
-                            </a>
+                            
                         </div>
                     </div>
 
