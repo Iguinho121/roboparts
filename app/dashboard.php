@@ -157,70 +157,6 @@ $badgesProjeto = [
     <title>Dashboard | RoboParts</title>
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..400,0..1,0">
-    <style>
-        .alerta-dashboard {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 16px;
-            border-radius: 14px;
-            margin-bottom: 18px;
-            font-size: 0.92rem;
-            font-weight: 500;
-            backdrop-filter: blur(12px);
-        }
-        .alerta-dashboard.sucesso {
-            background: rgba(34, 197, 94, 0.16);
-            border: 1px solid rgba(34, 197, 94, 0.38);
-            color: #86efac;
-        }
-        .alerta-dashboard.erro {
-            background: rgba(239, 68, 68, 0.16);
-            border: 1px solid rgba(239, 68, 68, 0.38);
-            color: #fca5a5;
-        }
-        .lista-emprestimos-abertos {
-            max-height: 340px;
-            overflow-y: auto;
-            padding-right: 4px;
-        }
-        .item-emprestimo-aberto {
-            gap: 12px;
-        }
-        .item-emprestimo-aberto .emp-detalhes {
-            min-width: 0;
-            flex: 1;
-        }
-        .item-emprestimo-aberto .emp-detalhes strong,
-        .item-emprestimo-aberto .emp-detalhes small {
-            display: block;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .btn-devolver-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 6px 12px;
-            border-radius: 999px;
-            border: 1px solid rgba(56, 189, 248, 0.45);
-            background: rgba(56, 189, 248, 0.16);
-            color: inherit;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: background 0.2s ease, transform 0.15s ease;
-        }
-        .btn-devolver-item:hover {
-            background: rgba(56, 189, 248, 0.3);
-            transform: translateY(-1px);
-        }
-        .btn-devolver-item .material-symbols-outlined {
-            font-size: 16px;
-        }
-    </style>
 </head>
 
 <body>
@@ -256,14 +192,14 @@ $badgesProjeto = [
         </header>
 
         <?php if ($flashSucesso): ?>
-            <div class="alerta-dashboard sucesso" role="status">
+            <div class="alerta-feedback sucesso" role="status">
                 <span class="material-symbols-outlined">check_circle</span>
                 <span><?= htmlspecialchars($flashSucesso) ?></span>
             </div>
         <?php endif; ?>
 
         <?php if ($flashErro): ?>
-            <div class="alerta-dashboard erro" role="alert">
+            <div class="alerta-feedback erro" role="alert">
                 <span class="material-symbols-outlined">error</span>
                 <span><?= htmlspecialchars($flashErro) ?></span>
             </div>
@@ -483,7 +419,9 @@ $badgesProjeto = [
                                     </div>
 
                                     <form method="POST" action="dashboard.php"
-                                          onsubmit="return confirm('Confirmar a devolução de <?= $qtdEmp ?>x <?= htmlspecialchars(addslashes($nomeCompEmp), ENT_QUOTES) ?>?');">
+                                          data-qtd="<?= $qtdEmp ?>"
+                                          data-nome="<?= htmlspecialchars($nomeCompEmp, ENT_QUOTES, 'UTF-8') ?>"
+                                          onsubmit="return confirmarDevolucao(event, this)">
                                         <input type="hidden" name="acao" value="devolver_emprestimo">
                                         <input type="hidden" name="movimentacao_id" value="<?= (int) $emp['id'] ?>">
                                         <button type="submit" class="btn-devolver-item">
@@ -500,6 +438,22 @@ $badgesProjeto = [
         </section>
     </main>
 
+    <!-- MODAL DE CONFIRMAÇÃO UNIVERSAL (MESMO PADRÃO DE COMPONENTES.PHP E KITS.PHP) -->
+    <div id="modalConfirmacao" class="modal-overlay" onclick="if(event.target===this) fecharModal('modalConfirmacao')">
+        <div class="modal-box modal-confirm">
+            <div class="confirm-icone-box azul" id="confirm_icone_box">
+                <span class="material-symbols-outlined">assignment_return</span>
+            </div>
+            <h3 id="confirm_titulo">Confirmar Devolução</h3>
+            <p id="confirm_mensagem">Tem certeza que deseja continuar?</p>
+
+            <div class="modal-rodape centralizado">
+                <button type="button" class="btn-modal-cancelar" onclick="fecharModal('modalConfirmacao')">Voltar</button>
+                <button type="button" id="btn_confirmar_sim" class="btn-modal-confirmar azul">Sim, Confirmar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         (() => {
             const sidebar = document.getElementById('glassSidebar');
@@ -511,6 +465,59 @@ $badgesProjeto = [
                 sidebar.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
             });
         })();
+
+        let formPendente = null;
+
+        function abrirModal(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('ativo');
+        }
+
+        function fecharModal(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('ativo');
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function confirmarDevolucao(event, form) {
+            event.preventDefault();
+            formPendente = form;
+
+            const qtd = form.dataset.qtd || '1';
+            const nome = escapeHtml(form.dataset.nome || 'este componente');
+
+            document.getElementById('confirm_titulo').textContent = 'Confirmar Devolução';
+            document.getElementById('confirm_mensagem').innerHTML =
+                `Deseja confirmar a devolução de <strong>${qtd}x ${nome}</strong> ao estoque?`;
+            document.getElementById('confirm_icone_box').className = 'confirm-icone-box azul';
+            document.getElementById('confirm_icone_box').innerHTML =
+                '<span class="material-symbols-outlined">assignment_return</span>';
+
+            const btnSim = document.getElementById('btn_confirmar_sim');
+            btnSim.className = 'btn-modal-confirmar azul';
+            abrirModal('modalConfirmacao');
+            return false;
+        }
+
+        document.getElementById('btn_confirmar_sim').addEventListener('click', () => {
+            fecharModal('modalConfirmacao');
+            if (formPendente) {
+                const alvo = formPendente;
+                formPendente = null;
+                alvo.submit();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                fecharModal('modalConfirmacao');
+            }
+        });
     </script>
 </body>
 
