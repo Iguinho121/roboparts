@@ -23,13 +23,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute(['email' => $email]);
         $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($usuario && password_verify($senha, $usuario['senha'])) {
+        $senhaValida = false;
+
+        if ($usuario) {
+            if (password_verify($senha, $usuario['senha'])) {
+                // Senha já está com hash seguro
+                $senhaValida = true;
+            } elseif (empty(password_get_info($usuario['senha'])['algo']) && hash_equals($usuario['senha'], $senha)) {
+                // Senha antiga em texto puro: valida e já atualiza para hash no banco
+                $senhaValida = true;
+                $novoHash = password_hash($senha, PASSWORD_DEFAULT);
+
+                $upd = $pdo->prepare('UPDATE usuarios SET senha = :senha WHERE id = :id');
+                $upd->execute([
+                    'senha' => $novoHash,
+                    'id'    => $usuario['id']
+                ]);
+            }
+        }
+
+        if ($senhaValida) {
             session_regenerate_id(true);
 
             $_SESSION['usuario_id'] = $usuario['id'];
             $_SESSION['usuario_nome'] = $usuario['nome'];
             $_SESSION['usuario_email'] = $usuario['email'];
-            $_SESSION['tipo_usuario'] = $usuario['tipo_usuario'] ?? 'usuario';
+            $_SESSION['tipo_usuario'] = $usuario['tipo_usuario'] ?? 'Comum';
 
             header('Location: dashboard.php');
             exit;
