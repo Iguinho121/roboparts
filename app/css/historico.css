@@ -724,6 +724,12 @@ span.flatpickr-weekday {
 /* =========================================================
    BOTOES DO FILTRO (Filtrar e Limpar)
    ========================================================= */
+.acoes-filtro {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .filtros button[type="submit"],
 .filtros a,
 .filtros button[type="reset"] {
@@ -788,4 +794,292 @@ span.flatpickr-weekday {
     box-shadow:
         inset 0 1.5px 1px rgba(255, 255, 255, 0.58),
         0 8px 18px rgba(0, 0, 0, 0.26);
+}
+
+/* =========================================================
+   CABECALHO DA LISTA E CONTADOR EM BOLHA DE VIDRO
+   ========================================================= */
+.titulo-lista {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.contador {
+    display: inline-flex;
+    align-items: center;
+    height: 34px;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(125, 211, 252, 0.42);
+    background: linear-gradient(180deg, rgba(0, 207, 255, 0.24) 0%, rgba(0, 207, 255, 0.08) 100%);
+    box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 0.45),
+        0 6px 16px rgba(0, 0, 0, 0.22);
+    color: #e0f2fe;
+    font-size: .82rem;
+    font-weight: 600;
+    letter-spacing: .2px;
+}
+
+/* =========================================================
+   CARDS DE BOLHAS DE VIDRO (MOVIMENTACOES REGISTRADAS)
+   ========================================================= */
+.lista-movimentacoes {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.movimentacao-bolha {
+    position: relative;
+    padding: 18px 22px;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: linear-gradient(
+        155deg,
+        rgba(255, 255, 255, 0.14) 0%,
+        rgba(255, 255, 255, 0.04) 48%,
+        rgba(255, 255, 255, 0.08) 100%
+    );
+    -webkit-backdrop-filter: blur(22px) saturate(175%);
+    backdrop-filter: blur(22px) saturate(175%);
+    box-shadow:
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.44),
+        inset 0 -1px 1px rgba(255, 255, 255, 0.14),
+        0 12px 28px -8px rgba(0, 0, 0, 0.42);
+    transition:
+        transform .28s var(--apple-spring),
+        border-color .25s var(--apple-ease),
+        background .25s var(--apple-ease),
+        box-shadow .28s var(--apple-ease);
+}
+
+.movimentacao-bolha:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.36);
+    background: linear-gradient(
+        155deg,
+        rgba(255, 255, 255, 0.19) 0%,
+        rgba(255, 255, 255, 0.06) 50%,
+        rgba(255, 255, 255, 0.11) 100%
+    );
+    box-shadow:
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.58),
+        inset 0 -1px 1px rgba(255, 255, 255, 0.18),
+        0 16px 34px -8px rgba(0, 0, 0, 0.52);
+}
+
+.bolha-topo {
+    display: grid;
+    grid-template-columns: minmax(210px, 1.4fr) auto minmax(260px, 1.3fr);
+    align-items: center;
+    gap: 16px;
+}
+
+.bolha-componente {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.bolha-componente strong {
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -.01em;
+}
+
+.bolha-codigo {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.09);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.30);
+    color: rgba(248, 250, 252, 0.85);
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .5px;
+}
+
+.bolha-badges {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Pilulas de tipo (Entrada, Emprestimo, Devolucao, Saida) */
+.etiqueta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .2px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.42), 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.etiqueta.entrada {
+    color: #a7f3d0;
+    border-color: rgba(0, 217, 154, 0.55);
+    background: linear-gradient(180deg, rgba(0, 217, 154, 0.30), rgba(0, 217, 154, 0.12));
+}
+
+.etiqueta.emprestimo {
+    color: #fef08a;
+    border-color: rgba(251, 191, 36, 0.55);
+    background: linear-gradient(180deg, rgba(251, 191, 36, 0.30), rgba(251, 191, 36, 0.12));
+}
+
+.etiqueta.devolucao {
+    color: #bae6fd;
+    border-color: rgba(56, 189, 248, 0.55);
+    background: linear-gradient(180deg, rgba(56, 189, 248, 0.30), rgba(56, 189, 248, 0.12));
+}
+
+.etiqueta.saida {
+    color: #fecdd3;
+    border-color: rgba(251, 113, 133, 0.55);
+    background: linear-gradient(180deg, rgba(251, 113, 133, 0.30), rgba(251, 113, 133, 0.12));
+}
+
+.bolha-qtd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    padding: 0 13px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06));
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.38);
+    color: #ffffff;
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+.bolha-meta {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.bolha-projeto,
+.bolha-data {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 13px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(12, 21, 40, 0.36);
+    color: rgba(248, 250, 252, 0.88);
+    font-size: .8rem;
+}
+
+.bolha-projeto .material-symbols-outlined,
+.bolha-data .material-symbols-outlined {
+    font-size: 16px;
+    color: var(--azul);
+}
+
+.bolha-observacao {
+    margin-top: 13px;
+    padding-top: 11px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(226, 232, 240, 0.86);
+    font-size: .86rem;
+    line-height: 1.5;
+}
+
+/* =========================================================
+   MENSAGEM VAZIA, AVISO E RODAPE
+   ========================================================= */
+.mensagem-vazia {
+    padding: 32px 20px;
+    border-radius: 22px;
+    border: 1px dashed rgba(255, 255, 255, 0.24);
+    background: rgba(255, 255, 255, 0.04);
+    text-align: center;
+}
+
+.mensagem-vazia h3 {
+    margin-bottom: 6px;
+    color: var(--texto);
+    font-size: 1rem;
+}
+
+.mensagem-vazia p {
+    color: var(--suave);
+    font-size: .86rem;
+}
+
+.aviso-limite {
+    margin-top: 14px;
+    color: var(--suave);
+    font-size: .8rem;
+    text-align: right;
+}
+
+.rodape {
+    margin-top: 8px;
+    color: var(--suave);
+    font-size: .82rem;
+}
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+@media (max-width: 1180px) {
+    .resumo {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .filtros {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .bolha-topo {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .bolha-meta {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 780px) {
+    body {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        position: relative;
+        top: 0;
+        width: calc(100% - 24px);
+        height: auto;
+        margin: 12px;
+    }
+
+    .pagina {
+        padding: 20px 14px 32px;
+    }
+
+    .resumo,
+    .filtros {
+        grid-template-columns: 1fr;
+    }
 }

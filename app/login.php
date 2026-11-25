@@ -3,11 +3,12 @@ session_start();
 
 // Se caso ele ja estiver logado ele redireciona para o dashboard
 if (isset($_SESSION['usuario_id'])) {
-    header('Location: dashboard.php'); 
+    header('Location: dashboard.php');
     exit;
 }
 
 $erro = '';
+$email = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_once __DIR__ . '/init.php';
@@ -18,21 +19,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($email) || empty($senha)) {
         $erro = 'Por favor, preencha todos os campos.';
     } else {
-       
         $stmt = $pdo->prepare('SELECT * FROM usuarios WHERE email = :email LIMIT 1');
         $stmt->execute(['email' => $email]);
         $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        
         if ($usuario && password_verify($senha, $usuario['senha'])) {
-            
-            
+            session_regenerate_id(true);
+
             $_SESSION['usuario_id'] = $usuario['id'];
             $_SESSION['usuario_nome'] = $usuario['nome'];
             $_SESSION['usuario_email'] = $usuario['email'];
-            
-            // Volta para o cadastro
-            header('Location: dashboard.php'); 
+            $_SESSION['tipo_usuario'] = $usuario['tipo_usuario'] ?? 'usuario';
+
+            header('Location: dashboard.php');
             exit;
         } else {
             $erro = 'E-mail ou senha incorretos.';
@@ -124,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="email">E-mail</label>
                 <div class="input-com-icone">
                     <span class="material-symbols-outlined icone-input">mail</span>
-                    <input type="email" id="email" name="email" placeholder="nome@dominio.com" required>
+                    <input type="email" id="email" name="email" placeholder="nome@dominio.com" value="<?= htmlspecialchars($email) ?>" required>
                 </div>
             </div>
 

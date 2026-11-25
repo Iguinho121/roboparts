@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/init.php';
+require_once __DIR__ . '/auth.php';
+exigirLogin();
 
 // Busca as categorias do banco para preencher o <select>
 $categorias = readAll($pdo, 'categorias');
@@ -9,33 +11,45 @@ $busca = $_GET['busca'] ?? '';
 $categoriaFiltro = $_GET['categoria_id'] ?? '';
 $apenasBaixo = isset($_GET['estoque_baixo']);
 
-// Monta a consulta de acordo com o que foi preenchido
+// Monta a consulta única com JOIN (elimina o N+1)
 $filtros = [];
 $params = [];
 
 if ($busca != '') {
-    $filtros[] = '(nome LIKE ? OR codigo LIKE ? OR descricao LIKE ?)';
+    $filtros[] = '(c.nome LIKE ? OR c.codigo LIKE ? OR c.descricao LIKE ?)';
     $params[] = "%$busca%";
     $params[] = "%$busca%";
     $params[] = "%$busca%";
 }
 
 if ($categoriaFiltro != '') {
-    $filtros[] = 'categoria_id = ?';
+    $filtros[] = 'c.categoria_id = ?';
     $params[] = $categoriaFiltro;
 }
 
 if ($apenasBaixo) {
-    $filtros[] = 'quantidade_disponivel < estoque_minimo';
+    $filtros[] = 'c.quantidade_disponivel < c.estoque_minimo';
 }
 
-// Junta os filtros com AND se existir algum
-$where = null;
+$sql = "
+    SELECT 
+        c.*,
+        cat.nome AS categoria_nome,
+        f.nome AS fornecedor_nome
+    FROM componentes c
+    LEFT JOIN categorias cat ON c.categoria_id = cat.id
+    LEFT JOIN fornecedores f ON c.fornecedor_id = f.id
+";
+
 if (count($filtros) > 0) {
-    $where = implode(' AND ', $filtros);
+    $sql .= ' WHERE ' . implode(' AND ', $filtros);
 }
 
-$componentes = readAll($pdo, 'componentes', $where, $params);
+$sql .= ' ORDER BY c.nome ASC';
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$componentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Mapa fixo das condições já cadastradas no banco (1, 2 e 3)
 $condicoes = [
@@ -50,159 +64,109 @@ $condicoes = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <title>Componentes | RoboParts</title>
     <link rel="stylesheet" href="css/componentes.css">
-    <title>Componentes - Flux</title>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..400,0..1,0">
 </head>
 
 <body>
+    <nav class="sidebar" id="glassSidebar" aria-label="Navegação principal">
+        <div class="sidebar-glass-sheen" aria-hidden="true"></div>
 
-    <div class="app-robo">
+        <a class="sidebar-logo" href="dashboard.php" aria-label="Flux - início">
+            <img src="imagens/logoflux.png" alt="Logo Flux">
+            <span>LUX</span>
+        </a>
 
-        <!-- Menu lateral -->
-        <nav class="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.php"><span class="material-symbols-outlined menu-icon">dashboard</span><span>Dashboard</span></a></li>
+            <li class="active"><a href="componentes.php" aria-current="page"><span class="material-symbols-outlined menu-icon">memory</span><span>Componentes</span></a></li>
+            <?php if (isAdmin()): ?>
+                <li><a href="adicionar_componente.php"><span class="material-symbols-outlined menu-icon">add_circle</span><span>Cadastro</span></a></li>
+            <?php endif; ?>
+            <li><a href="projetos.php"><span class="material-symbols-outlined menu-icon">folder</span><span>Projetos</span></a></li>
+            <li><a href="historico.php"><span class="material-symbols-outlined menu-icon">history</span><span>Histórico</span></a></li>
+            <li><a href="kits.php"><span class="material-symbols-outlined menu-icon">inventory_2</span><span>Kits e Catálogos</span></a></li>
+        </ul>
 
-            <div class="sidebar-logo">
-                <img src="imagens/novo_logo.png" alt="Logo Flux">
+        <a class="sidebar-logout" href="logout.php" aria-label="Sair do sistema">
+            <span class="material-symbols-outlined menu-icon">logout</span>
+            <span>Sair</span>
+        </a>
+    </nav>
+
+    <main class="pagina">
+        <header class="cabecalho">
+            <div>
+                <p class="identificacao">ROBOPARTS / INVENTÁRIO</p>
+                <h1>Gerenciar componentes</h1>
+                <p class="descricao">Consulte, filtre e gerencie os componentes, quantidades e condições do estoque.</p>
+            </div>
+        </header>
+
+        <section class="painel painel-filtros">
+            <div class="titulo-painel">
+                <h2>Consultar inventário</h2>
+                <p>Busque por nome, código ou descrição, filtre por categoria ou destaque itens em estoque baixo.</p>
             </div>
 
-            <ul class="sidebar-menu">
+            <form method="GET" action="componentes.php" class="barra-acoes">
+                <div class="campo caixa-procurar">
+                    <span class="material-symbols-outlined procurar-icone">search</span>
+                    <input type="text" name="busca" value="<?= htmlspecialchars($busca) ?>"
+                        placeholder="Buscar por nome, código ou descrição...">
+                </div>
 
-                <li>
-                    <a href="index.php">
-                        <span class="material-symbols-outlined menu-icon">dashboard</span>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
+                <div class="campo categoria">
+                    <select name="categoria_id" aria-label="Filtrar por categoria">
+                        <option value="">Todas as Categorias</option>
+                        <?php foreach ($categorias as $cat): ?>
+                            <option value="<?= $cat['id'] ?>" <?= $categoriaFiltro == $cat['id'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($cat['nome']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-                <li class="active">
-                    <a href="componentes.php">
-                        <span class="material-symbols-outlined menu-icon">memory</span>
-                        <span>Componentes</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="adicionar_componente.php">
-                        <span class="material-symbols-outlined menu-icon">add_circle</span>
-                        <span>Cadastro</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="material-symbols-outlined menu-icon">swap_horiz</span>
-                        <span>Empréstimo</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="material-symbols-outlined menu-icon">folder</span>
-                        <span>Projetos</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="material-symbols-outlined menu-icon">history</span>
-                        <span>Histórico</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <span class="material-symbols-outlined menu-icon">inventory_2</span>
-                        <span>Kits e Catálogos</span>
-                    </a>
-                </li>
-
-            </ul>
-
-            <div class="sidebar-card">
-
-                <img src="imagens/robozin.png" alt="Robo do menu">
-
-                <h3>Flux</h3>
-
-                <span class="robo-descricao">
-                    Inovação em<br>cada componente.
-                </span>
-
-            </div>
-
-            <div class="sidebar-status">
-                <span class="status-bolinha"></span>
-
-                <p>
-                    Sistema Operacional <strong>v1.0</strong>
-                </p>
-            </div>
-
-        </nav>
-
-
-        <!-- Conteúdo Principal -->
-        <main class="main">
-
-            <div class="corpo-conteudo">
-
-                <header class="titulo-principal">
-                    <div class="header-imagem">
-                        <span class="material-symbols-outlined header-icon">memory</span>
-                    </div>
-                    <div class="linha-header"></div>
-
-                    <div class="header-texto">
-                        <h1>Gerenciar Componentes</h1>
-                        <p>Portal de Gestão Inteligente de Inventário</p>
-                    </div>
-                </header>
-
-                <form method="GET" action="componentes.php" class="barra-acoes">
-
-                    <div class="caixa-procurar">
-                        <span class="material-symbols-outlined procurar-icone">search</span>
-                        <input type="text" name="busca" value="<?= htmlspecialchars($busca) ?>"
-                            placeholder="Buscar por nome, código ou descrição...">
-                    </div>
-
-                    <div class="categoria">
-                        <select name="categoria_id">
-                            <option value="">Todas as Categorias</option>
-                            <?php foreach ($categorias as $cat): ?>
-                                <option value="<?= $cat['id'] ?>" <?= $categoriaFiltro == $cat['id'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($cat['nome']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
+                <div class="acoes-barra">
                     <button type="submit" class="btn-filtrar">Filtrar</button>
 
-                    <div class="btn-aviso-estoque">
-                        <?php if ($apenasBaixo): ?>
-                            <a href="componentes.php" class="btn-filtro-ativo">
-                                <span class="material-symbols-outlined icone-aviso">warning</span>
-                                Mostrando Estoque Baixo (Limpar)
-                            </a>
-                        <?php else: ?>
-                            <a href="componentes.php?estoque_baixo=1" class="btn-filtro">
-                                <span class="material-symbols-outlined icone-aviso">warning</span>
-                                Apenas Estoque Baixo
-                            </a>
-                        <?php endif; ?>
-                    </div>
+                    <?php if ($apenasBaixo): ?>
+                        <a href="componentes.php" class="btn-filtro-ativo">
+                            <span class="material-symbols-outlined icone-aviso">warning</span>
+                            Estoque Baixo (Limpar)
+                        </a>
+                    <?php else: ?>
+                        <a href="componentes.php?estoque_baixo=1" class="btn-filtro">
+                            <span class="material-symbols-outlined icone-aviso">warning</span>
+                            Apenas Estoque Baixo
+                        </a>
+                    <?php endif; ?>
 
-                    <div class="cadastrar-componente">
-                        <a href="adicionar_componente.php">+ Cadastrar Componente</a>
-                    </div>
+                    <?php if (isAdmin()): ?>
+                        <a href="adicionar_componente.php" class="btn-cadastrar">+ Cadastrar Componente</a>
+                    <?php endif; ?>
+                </div>
+            </form>
+        </section>
 
-                </form>
+        <section class="painel painel-tabela">
+            <div class="titulo-painel titulo-lista">
+                <div>
+                    <h2>Componentes cadastrados</h2>
+                    <p>Visão geral de disponibilidade, fornecedor, estado e ações.</p>
+                </div>
+                <span class="contador"><?= count($componentes) ?> item(ns)</span>
+            </div>
 
-                <div class="tabela">
-
+            <?php if (count($componentes) == 0): ?>
+                <div class="mensagem-vazia">
+                    <h3>Nenhum componente encontrado</h3>
+                    <p>Não existem componentes com os filtros selecionados.</p>
+                </div>
+            <?php else: ?>
+                <div class="tabela-responsiva">
                     <div class="tabela-cabecalho">
                         <div class="coluna">SKU / ITEM</div>
                         <div class="coluna">DESCRIÇÃO</div>
@@ -213,22 +177,12 @@ $condicoes = [
                         <div class="coluna">AÇÕES</div>
                     </div>
 
-                    <?php if (count($componentes) == 0): ?>
-                        <div class="tabela-linha">
-                            <div class="coluna_item" style="grid-column: 1 / -1; text-align: center; padding: 20px 0;">
-                                Nenhum componente encontrado com os filtros selecionados.
-                            </div>
-                        </div>
-                    <?php else: ?>
+                    <div class="lista-componentes">
                         <?php foreach ($componentes as $c):
-                            $categoria = read($pdo, 'categorias', 'id = ?', [$c['categoria_id']]);
-                            $fornecedor = $c['fornecedor_id']
-                                ? read($pdo, 'fornecedores', 'id = ?', [$c['fornecedor_id']])
-                                : null;
                             $condicao = $condicoes[$c['condicao_id']] ?? ['texto' => 'Não informada', 'classe' => 'distintivo_usado'];
                             $estoqueBaixo = $c['quantidade_disponivel'] < $c['estoque_minimo'];
                         ?>
-                            <div class="tabela-linha">
+                            <article class="componente-bolha">
                                 <div class="coluna_item">
                                     <strong><?= htmlspecialchars($c['nome']) ?></strong>
                                     <small><?= htmlspecialchars($c['codigo'] ?? 'S/N') ?></small>
@@ -239,15 +193,15 @@ $condicoes = [
                                 </div>
 
                                 <div class="coluna_categoria">
-                                    <span><?= htmlspecialchars($categoria['nome'] ?? 'Sem categoria') ?></span>
+                                    <span><?= htmlspecialchars($c['categoria_nome'] ?? 'Sem categoria') ?></span>
                                 </div>
 
                                 <div class="coluna_fornecedor">
-                                    <?= htmlspecialchars($fornecedor['nome'] ?? 'Não informado') ?>
+                                    <?= htmlspecialchars($c['fornecedor_nome'] ?? 'Não informado') ?>
                                 </div>
 
                                 <div class="coluna_disponivel">
-                                    <?= $c['quantidade_disponivel'] ?> / <?= $c['quantidade_total'] ?> un.
+                                    <span><?= $c['quantidade_disponivel'] ?> / <?= $c['quantidade_total'] ?> un.</span>
                                     <?php if ($estoqueBaixo): ?>
                                         <span class="distintivo_alerta">Baixo</span>
                                     <?php endif; ?>
@@ -258,21 +212,89 @@ $condicoes = [
                                 </div>
 
                                 <div class="coluna_acoes">
-                                    <a href="editar_componente.php?id=<?= $c['id'] ?>">Editar</a>
-                                    <a href="excluir_componente.php?id=<?= $c['id'] ?>" class="btn-excluir">Excluir</a>
+                                    <?php if (isAdmin()): ?>
+                                        <a href="editar_componente.php?id=<?= $c['id'] ?>">Editar</a>
+                                        <a href="excluir_componente.php?id=<?= $c['id'] ?>" class="btn-excluir">Excluir</a>
+                                    <?php else: ?>
+                                        <span class="sem-acao">-</span>
+                                    <?php endif; ?>
                                 </div>
-                            </div>
+                            </article>
                         <?php endforeach; ?>
-                    <?php endif; ?>
-
+                    </div>
                 </div>
+            <?php endif; ?>
+        </section>
+    </main>
 
-            </div>
+    <script>
+        (() => {
+            const sidebar = document.getElementById('glassSidebar');
+            if (!sidebar) return;
 
-        </main>
+            sidebar.addEventListener('pointermove', (e) => {
+                const rect = sidebar.getBoundingClientRect();
+                sidebar.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                sidebar.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+            });
+        })();
 
-    </div>
+        /* Dropdown Liquid Glass sincronizado com o <select> */
+        document.querySelectorAll('.campo select').forEach((select) => {
+            select.classList.add('glass-select-native');
 
+            const wrapper = document.createElement('div');
+            wrapper.className = 'glass-select';
+
+            const trigger = document.createElement('button');
+            trigger.type = 'button';
+            trigger.className = 'glass-select-trigger';
+            trigger.innerHTML = `
+                <span>${select.options[select.selectedIndex]?.text || 'Selecione'}</span>
+                <svg class="glass-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            `;
+
+            const menu = document.createElement('div');
+            menu.className = 'glass-select-menu';
+
+            Array.from(select.options).forEach((opt, idx) => {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'glass-select-option' + (idx === select.selectedIndex ? ' selected' : '');
+                item.textContent = opt.text;
+
+                item.addEventListener('click', () => {
+                    select.value = opt.value;
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                    trigger.querySelector('span').textContent = opt.text;
+                    menu.querySelectorAll('.glass-select-option').forEach((el) => el.classList.remove('selected'));
+                    item.classList.add('selected');
+                    wrapper.classList.remove('open');
+                });
+
+                menu.appendChild(item);
+            });
+
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.glass-select.open').forEach((el) => {
+                    if (el !== wrapper) el.classList.remove('open');
+                });
+                wrapper.classList.toggle('open');
+            });
+
+            wrapper.appendChild(trigger);
+            wrapper.appendChild(menu);
+            select.parentNode.insertBefore(wrapper, select.nextSibling);
+        });
+
+        /* Fecha o menu se clicar fora */
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.glass-select.open').forEach((el) => el.classList.remove('open'));
+        });
+    </script>
 </body>
 
 </html>

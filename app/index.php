@@ -7,51 +7,62 @@ if (isset($_SESSION['usuario_id'])) {
     exit;
 }
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+$mensagem = '';
+$tipoMensagem = '';
+$nome = '';
+$email = '';
 
-$mensagem = '';$tipoMensagem = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        require_once __DIR__ . '/init.php';
 
-try {
-    require_once __DIR__ . '/init.php';
-    
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        
         $nome = trim($_POST['nome'] ?? '');
         $email = trim($_POST['email'] ?? '');
-        $senha =$_POST['senha'] ?? '';
+        $senha = $_POST['senha'] ?? '';
 
-        if (empty($nome) || empty($email) || empty($senha)) {
-            $mensagem = 'Por favor, preencha todos os campos.';$tipoMensagem = 'erro';
-            
+        if ($nome === '' || $email === '' || $senha === '') {
+            $mensagem = 'Por favor, preencha todos os campos.';
+            $tipoMensagem = 'erro';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $mensagem = 'Informe um e-mail válido.';
+            $tipoMensagem = 'erro';
+        } elseif (strlen($senha) < 8 || !preg_match('/[A-Za-z]/', $senha) || !preg_match('/\d/', $senha)) {
+            $mensagem = 'A senha deve ter no mínimo 8 caracteres, com pelo menos uma letra e um número.';
+            $tipoMensagem = 'erro';
         } else {
-            $stmt =$pdo->prepare('SELECT id FROM usuarios WHERE email = :email');
-            $stmt->execute(['email' =>$email]);
-            
-            if ($stmt->fetch()) {$mensagem = 'Este e-mail já está cadastrado. Vá para a aba "Entrar".';
+            $stmt = $pdo->prepare('SELECT id FROM usuarios WHERE email = :email LIMIT 1');
+            $stmt->execute(['email' => $email]);
+
+            if ($stmt->fetch()) {
+                $mensagem = 'Este e-mail já está cadastrado. Vá para a aba "Entrar".';
                 $tipoMensagem = 'erro';
-                
             } else {
-                $senhaCriptografada = password_hash($senha, PASSWORD_DEFAULT);$sql = 'INSERT INTO usuarios (nome, email, senha, tipo_usuario) VALUES (:nome, :email, :senha, "Comum")';
+                $senhaCriptografada = password_hash($senha, PASSWORD_DEFAULT);
+                $sql = 'INSERT INTO usuarios (nome, email, senha, tipo_usuario) VALUES (:nome, :email, :senha, "Comum")';
                 $inserir = $pdo->prepare($sql);
-                
-                $sucesso =$inserir->execute([
+
+                $sucesso = $inserir->execute([
                     'nome' => $nome,
                     'email' => $email,
-                    'senha' => $senhaCriptografada
+                    'senha' => $senhaCriptografada,
                 ]);
-                
-                if ($sucesso) {$mensagem = 'Conta criada com sucesso! Vá para a aba "Entrar" para aceder ao sistema.';
+
+                if ($sucesso) {
+                    $mensagem = 'Conta criada com sucesso! Vá para a aba "Entrar" para aceder ao sistema.';
                     $tipoMensagem = 'sucesso';
+                    $nome = '';
+                    $email = '';
                 } else {
                     $mensagem = 'Erro ao criar a conta. Tente novamente.';
                     $tipoMensagem = 'erro';
                 }
             }
         }
+    } catch (Throwable $exception) {
+        error_log('Erro ao cadastrar usuário no Flux: ' . $exception->getMessage());
+        $mensagem = 'Não foi possível concluir o cadastro. Tente novamente mais tarde.';
+        $tipoMensagem = 'erro';
     }
-} catch (Throwable $exception) {$mensagem = 'Erro no BD: ' . $exception->getMessage();$tipoMensagem = 'erro';
 }
 ?>
 <!DOCTYPE html>
@@ -141,7 +152,7 @@ try {
                 <label for="nome">Nome</label>
                 <div class="input-com-icone">
                     <span class="material-symbols-outlined icone-input">person</span>
-                    <input type="text" id="nome" name="nome" placeholder="Como podemos te chamar" required>
+                    <input type="text" id="nome" name="nome" placeholder="Como podemos te chamar" value="<?= htmlspecialchars($nome) ?>" required>
                 </div>
             </div>
 
@@ -149,7 +160,7 @@ try {
                 <label for="email">E-mail</label>
                 <div class="input-com-icone">
                     <span class="material-symbols-outlined icone-input">mail</span>
-                    <input type="email" id="email" name="email" placeholder="nome@dominio.com" required>
+                    <input type="email" id="email" name="email" placeholder="nome@dominio.com" value="<?= htmlspecialchars($email) ?>" required>
                 </div>
             </div>
 

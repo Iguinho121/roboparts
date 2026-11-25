@@ -1,5 +1,7 @@
 <?php
 // Historico de movimentacoes do RoboParts.
+require_once __DIR__ . '/auth.php';
+exigirLogin();
 
 $erroConsulta = '';
 $consultaOk = false;
@@ -130,7 +132,7 @@ $h = static fn($valor): string => htmlspecialchars((string) ($valor ?? ''), ENT_
   <nav class="sidebar" id="glassSidebar" aria-label="Navegação principal">
     <div class="sidebar-glass-sheen" aria-hidden="true"></div>
 
-    <a class="sidebar-logo" href="index.php" aria-label="Flux - início">
+    <a class="sidebar-logo" href="dashboard.php" aria-label="Flux - início">
       <img src="imagens/logoflux.png" alt="Logo Flux">
       <span>LUX</span>
     </a>
@@ -138,7 +140,9 @@ $h = static fn($valor): string => htmlspecialchars((string) ($valor ?? ''), ENT_
     <ul class="sidebar-menu">
       <li><a href="dashboard.php"><span class="material-symbols-outlined menu-icon">dashboard</span><span>Dashboard</span></a></li>
       <li><a href="componentes.php"><span class="material-symbols-outlined menu-icon">memory</span><span>Componentes</span></a></li>
-      <li><a href="index.php"><span class="material-symbols-outlined menu-icon">add_circle</span><span>Cadastro</span></a></li>
+      <?php if (isAdmin()): ?>
+        <li><a href="adicionar_componente.php"><span class="material-symbols-outlined menu-icon">add_circle</span><span>Cadastro</span></a></li>
+      <?php endif; ?>
       <li><a href="projetos.php"><span class="material-symbols-outlined menu-icon">folder</span><span>Projetos</span></a></li>
       <li class="active"><a href="historico.php" aria-current="page"><span class="material-symbols-outlined menu-icon">history</span><span>Histórico</span></a></li>
       <li><a href="kits.php"><span class="material-symbols-outlined menu-icon">inventory_2</span><span>Kits e Catálogos</span></a></li>
@@ -231,34 +235,41 @@ $h = static fn($valor): string => htmlspecialchars((string) ($valor ?? ''), ENT_
           <p>Não existem registros para os filtros selecionados.</p>
         </div>
       <?php else: ?>
-        <div class="tabela-responsiva">
-          <table>
-            <thead>
-              <tr>
-                <th>Data e hora</th>
-                <th>Componente</th>
-                <th>Tipo</th>
-                <th>Quantidade</th>
-                <th>Projeto</th>
-                <th>Observação</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php foreach ($movimentacoes as $movimentacao):
-                $tipoAtual = $tiposExibicao[$movimentacao['tipo_movimentacao']] ?? ['nome' => $movimentacao['tipo_movimentacao'], 'classe' => 'saida'];
-              ?>
-                <tr>
-                  <td class="data"><?= $h(date('d/m/Y H:i', strtotime($movimentacao['data_movimentacao']))) ?></td>
-                  <td><strong><?= $h($movimentacao['componente_nome']) ?></strong><small><?= $h($movimentacao['componente_codigo'] ?: 'Sem código') ?></small></td>
-                  <td><span class="etiqueta <?= $h($tipoAtual['classe']) ?>"><?= $h($tipoAtual['nome']) ?></span></td>
-                  <td><?= $h($movimentacao['quantidade']) ?></td>
-                  <td><?= $h($movimentacao['projeto_nome'] ?: '—') ?></td>
-                  <td class="observacao"><?= $h($movimentacao['observacao'] ?: 'Sem observação') ?></td>
-                </tr>
-              <?php endforeach; ?>
-            </tbody>
-          </table>
+        <div class="lista-movimentacoes">
+          <?php foreach ($movimentacoes as $movimentacao):
+            $tipoAtual = $tiposExibicao[$movimentacao['tipo_movimentacao']] ?? ['nome' => $movimentacao['tipo_movimentacao'], 'classe' => 'saida'];
+          ?>
+            <article class="movimentacao-bolha">
+              <div class="bolha-topo">
+                <div class="bolha-componente">
+                  <strong><?= $h($movimentacao['componente_nome']) ?></strong>
+                  <span class="bolha-codigo"><?= $h($movimentacao['componente_codigo'] ?: 'Sem código') ?></span>
+                </div>
+
+                <div class="bolha-badges">
+                  <span class="etiqueta <?= $h($tipoAtual['classe']) ?>"><?= $h($tipoAtual['nome']) ?></span>
+                  <span class="bolha-qtd"><?= $h($movimentacao['quantidade']) ?> un.</span>
+                </div>
+
+                <div class="bolha-meta">
+                  <span class="bolha-projeto" title="Projeto vinculado">
+                    <span class="material-symbols-outlined">folder</span>
+                    <?= $h($movimentacao['projeto_nome'] ?: 'Sem projeto') ?>
+                  </span>
+                  <time class="bolha-data">
+                    <span class="material-symbols-outlined">schedule</span>
+                    <?= $h(date('d/m/Y H:i', strtotime($movimentacao['data_movimentacao']))) ?>
+                  </time>
+                </div>
+              </div>
+
+              <p class="bolha-observacao">
+                <?= $h($movimentacao['observacao'] ?: 'Sem observação registrada.') ?>
+              </p>
+            </article>
+          <?php endforeach; ?>
         </div>
+
         <?php if (count($movimentacoes) === 200): ?>
           <p class="aviso-limite">Exibindo os 200 registros mais recentes. Utilize os filtros para refinar a pesquisa.</p>
         <?php endif; ?>
