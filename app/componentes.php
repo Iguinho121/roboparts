@@ -244,7 +244,7 @@ $condicoes = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Componentes | RoboParts</title>
+    <title>Componentes | Flux</title>
     <link rel="stylesheet" href="css/componentes.css">
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..400,0..1,0">
@@ -276,7 +276,7 @@ $condicoes = [
     <main class="pagina">
         <header class="cabecalho">
             <div>
-                <p class="identificacao">ROBOPARTS / INVENTÁRIO</p>
+                <p class="identificacao">Flux / INVENTÁRIO</p>
                 <h1>Gerenciar componentes</h1>
                 <p class="descricao">Consulte, cadastre, filtre, empreste e gerencie os componentes e condições do estoque.</p>
             </div>

@@ -154,7 +154,7 @@ $badgesProjeto = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | RoboParts</title>
+    <title>Dashboard | Flux</title>
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..400,0..1,0">
 </head>
@@ -185,7 +185,7 @@ $badgesProjeto = [
     <main class="pagina">
         <header class="cabecalho">
             <div>
-                <p class="identificacao">ROBOPARTS / VISÃO GERAL</p>
+                <p class="identificacao">Flux / VISÃO GERAL</p>
                 <h1>Dashboard</h1>
                 <p class="descricao">Visão geral do inventário, projetos e movimentações do laboratório.</p>
             </div>

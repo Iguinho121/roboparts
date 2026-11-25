@@ -231,7 +231,7 @@ $filtroNivel = $_GET['nivel'] ?? '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kits e Catálogos | RoboParts</title>
+    <title>Kits e Catálogos | Flux</title>
     <link rel="stylesheet" href="css/kits.css">
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..400,0..1,0">
@@ -263,7 +263,7 @@ $filtroNivel = $_GET['nivel'] ?? '';
     <main class="pagina">
         <header class="cabecalho">
             <div>
-                <p class="identificacao">ROBOPARTS / KITS E CATÁLOGOS</p>
+                <p class="identificacao">Flux / KITS E CATÁLOGOS</p>
                 <h1>Produtos | Robóticas</h1>
                 <p class="descricao">Selecione um kit pré-configurado por tipo de projeto para requisição rápida.</p>
             </div>

@@ -1,5 +1,5 @@
 <?php
-// Historico de movimentacoes do RoboParts.
+// Historico de movimentacoes do Flux.
 require_once __DIR__ . '/auth.php';
 exigirLogin();
 
@@ -100,7 +100,7 @@ try {
   $consultaOk = true;
 } catch (Throwable $erro) {
   // O detalhe tecnico fica no log; a tela mostra uma mensagem amigavel.
-  error_log('Erro no historico do RoboParts: ' . $erro->getMessage());
+  error_log('Erro no historico do Flux: ' . $erro->getMessage());
   $erroConsulta = 'Não foi possível carregar o histórico. Verifique a conexão e tente novamente.';
 }
 
@@ -121,7 +121,7 @@ $h = static fn($valor): string => htmlspecialchars((string) ($valor ?? ''), ENT_
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Histórico | RoboParts</title>
+  <title>Histórico | Flux</title>
 
   <!-- ⚠️ DEPENDÊNCIA DO JAVASCRIPT (Flatpickr): remova esta linha se retirar o JS do calendário -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -155,7 +155,7 @@ $h = static fn($valor): string => htmlspecialchars((string) ($valor ?? ''), ENT_
   <main class="pagina">
     <header class="cabecalho">
       <div>
-        <p class="identificacao">ROBOPARTS / ESTOQUE</p>
+        <p class="identificacao">Flux / ESTOQUE</p>
         <h1>Histórico de movimentações</h1>
         <p class="descricao">Acompanhe as entradas, saídas, empréstimos e devoluções dos componentes.</p>
       </div>
