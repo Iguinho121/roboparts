@@ -323,3 +323,10 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2026-11-24 15:34:42
+
+ALTER TABLE movimentacoes
+MODIFY COLUMN tipo_movimentacao ENUM('Entrada', 'Saida', 'Emprestimo', 'Devolucao', 'Kit Requisitado') NOT NULL;
+
+ALTER TABLE movimentacoes
+ADD COLUMN devolvido TINYINT(1) NOT NULL DEFAULT 0;
+	
