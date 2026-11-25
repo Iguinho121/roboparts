@@ -17,7 +17,7 @@ $tipo = $lerFiltro('tipo');
 $dataInicio = $lerFiltro('data_inicio');
 $dataFim = $lerFiltro('data_fim');
 
-$tiposPermitidos = ['Entrada', 'Saida', 'Emprestimo', 'Devolucao'];
+$tiposPermitidos = ['Entrada', 'Saida', 'Emprestimo', 'Devolucao', 'Kit Requisitado'];
 if (!in_array($tipo, $tiposPermitidos, true)) {
   $tipo = '';
 }
@@ -110,6 +110,7 @@ $tiposExibicao = [
   'Saida' => ['nome' => 'Saída', 'classe' => 'saida'],
   'Emprestimo' => ['nome' => 'Empréstimo', 'classe' => 'emprestimo'],
   'Devolucao' => ['nome' => 'Devolução', 'classe' => 'devolucao'],
+  'Kit Requisitado' => ['nome' => 'Kit Requisitado', 'classe' => 'emprestimo'],
 ];
 
 // Escapa os valores antes de inseri-los no HTML.
