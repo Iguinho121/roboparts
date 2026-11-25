@@ -23,8 +23,6 @@ body {
     min-height: 100vh;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-
 }
 
 .container-principal {
@@ -126,24 +124,66 @@ body {
     line-height: 1.4;
 }
 
+/* =========================================================
+   CARD DE LOGIN / CRIAR CONTA EM LIQUID GLASS (TOM AZUL SIDEBAR)
+   ========================================================= */
 form {
-    background-color: #111827;
-    border: 1px solid #1f2937;
-    border-radius: 12px;
+    position: relative;
+    border-radius: 26px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background:
+        linear-gradient(
+            160deg,
+            rgba(37, 99, 235, 0.24) 0%,
+            rgba(18, 36, 72, 0.72) 45%,
+            rgba(12, 21, 40, 0.88) 78%,
+            rgba(30, 64, 175, 0.22) 100%
+        ),
+        rgba(12, 21, 40, 0.90);
+    box-shadow:
+        inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.45),
+        inset 1px 0 1px 0 rgba(255, 255, 255, 0.20),
+        inset 0 -1.5px 1px 0 rgba(255, 255, 255, 0.18),
+        0 24px 56px -12px rgba(0, 0, 0, 0.62);
     padding: 35px;
     width: 100%;
     max-width: 480px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     gap: 18px;
     flex-shrink: 0;
+    -webkit-font-smoothing: antialiased;
+    transition: border-color .35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow .35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    form {
+        background: linear-gradient(
+            160deg,
+            rgba(37, 99, 235, 0.22) 0%,
+            rgba(16, 32, 64, 0.62) 45%,
+            rgba(12, 21, 40, 0.76) 78%,
+            rgba(30, 64, 175, 0.20) 100%
+        );
+        -webkit-backdrop-filter: blur(26px) saturate(175%) brightness(1.06);
+        backdrop-filter: blur(26px) saturate(175%) brightness(1.06);
+    }
+}
+
+form:hover {
+    border-color: rgba(125, 211, 252, 0.38);
+    box-shadow:
+        inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.55),
+        inset 1px 0 1px 0 rgba(255, 255, 255, 0.24),
+        inset 0 -1.5px 1px 0 rgba(255, 255, 255, 0.22),
+        0 28px 64px -12px rgba(0, 0, 0, 0.68);
 }
 
 .seletor-abas {
     display: flex;
-    background-color: #1e293b;
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
     padding: 4px;
     margin-bottom: 10px;
 }
@@ -152,22 +192,30 @@ form {
     flex: 1;
     text-align: center;
     padding: 10px;
-    color: #94a3b8;
+    color: rgba(255, 255, 255, 0.75);
     text-decoration: none;
     font-size: 14px;
     font-weight: 600;
-    border-radius: 6px;
-    transition: all 0.2s;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .aba:hover {
     color: #f8fafc;
 }
 
+.aba:not(.ativa):hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
 .aba.ativa {
-    background-color: #334155;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.11) 100%);
+    border-color: rgba(255, 255, 255, 0.36);
     color: #ffffff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow:
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.55),
+        0 4px 14px rgba(0, 0, 0, 0.22);
 }
 
 .campo-grupo {
@@ -186,12 +234,14 @@ form {
 
 .link-esqueci {
     font-size: 12px;
-    color: #3b82f6;
+    color: #7dd3fc;
     text-decoration: none;
+    font-weight: 500;
 }
 
 .link-esqueci:hover {
     text-decoration: underline;
+    color: #bae6fd;
 }
 
 .cabecalho-form {
@@ -215,7 +265,8 @@ form {
 label {
     font-size: 14px;
     font-weight: 600;
-    color: #94a3b8;
+    color: rgba(248, 250, 252, 0.88);
+    margin-left: 4px;
 }
 
 .input-com-icone {
@@ -229,7 +280,7 @@ label {
     position: absolute;
     left: 14px;
     font-size: 20px;
-    color: #64748b;
+    color: rgba(255, 255, 255, 0.62);
     pointer-events: none;
     user-select: none;
     transition: color 0.2s;
@@ -239,13 +290,14 @@ label {
     position: absolute;
     right: 14px;
     font-size: 20px;
-    color: #64748b;
+    color: rgba(255, 255, 255, 0.65);
     cursor: pointer;
+    user-select: none;
     transition: color 0.2s;
 }
 
 .icone-senha-olho:hover {
-    color: #94a3b8;
+    color: #ffffff;
 }
 
 input[type="text"],
@@ -255,29 +307,37 @@ input[type="password"] {
     font-family: inherit;
     font-size: 15px;
     padding: 12px 44px 12px 44px;
-    background-color: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.06) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 0.34),
+        0 4px 12px rgba(0, 0, 0, 0.16);
+    border-radius: 999px;
     color: #f8fafc;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
 .input-com-icone:focus-within .icone-input {
-    color: #3b82f6;
+    color: #00cfff;
 }
 
 input:focus-visible {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    border-color: rgba(125, 211, 252, 0.80);
+    box-shadow: 0 0 0 3px rgba(0, 207, 255, 0.22);
 }
 
 .requisitos-senha {
     display: flex;
     gap: 12px;
     font-size: 12px;
-    color: #64748b;
+    color: #94a3b8;
     margin-top: 4px;
+    margin-left: 4px;
 }
 
 .requisito {
@@ -288,27 +348,33 @@ input:focus-visible {
 
 .icone-check {
     font-size: 14px;
-    color: #64748b;
+    color: #00cfff;
 }
 
 button {
     width: 100%;
-    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    background: linear-gradient(180deg, rgba(0, 207, 255, 0.56) 0%, rgba(0, 207, 255, 0.26) 100%);
     color: #ffffff;
-    border: none;
+    border: 1px solid rgba(125, 211, 252, 0.65);
     padding: 14px;
-    border-radius: 8px;
+    border-radius: 999px;
     font-size: 15px;
     font-weight: bold;
     cursor: pointer;
     margin-top: 10px;
-    transition: all 0.2s;
-    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow:
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.68),
+        0 8px 22px rgba(0, 207, 255, 0.26);
 }
 
 button:hover {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    box-shadow: 0 6px 25px rgba(59, 130, 246, 0.6);
+    transform: translateY(-2px);
+    border-color: rgba(186, 230, 253, 0.92);
+    background: linear-gradient(180deg, rgba(0, 207, 255, 0.70) 0%, rgba(0, 207, 255, 0.36) 100%);
+    box-shadow:
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.78),
+        0 10px 26px rgba(0, 207, 255, 0.36);
 }
 
 button:active {
@@ -317,7 +383,7 @@ button:active {
 
 button:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.5);
+    box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.5);
 }
 
 .termos-privacidade {
@@ -329,12 +395,12 @@ button:focus-visible {
 }
 
 .termos-privacidade a {
-    color: #94a3b8;
+    color: #bae6fd;
     text-decoration: underline;
 }
 
 .termos-privacidade a:hover {
-    color: #cbd5e1;
+    color: #ffffff;
 }
 
 @media (max-width: 900px) {
@@ -367,22 +433,10 @@ button:focus-visible {
     }
 }
 
-/* Animação nas duas paginas */
+/* Animação nas duas paginas */
 .container-principal {
     animation: surgirSuave 0.4s ease-out forwards;
 }
-
-
-.aba {
-    transition: all 0.3s ease;
-    border-radius: 6px;
-}
-
-.aba:not(.ativa):hover {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-
 
 .card-alerta-sistema {
     margin-top: 40px;
@@ -395,7 +449,6 @@ button:focus-visible {
     backdrop-filter: blur(4px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
-
 
 .card-alerta-sistema::before {
     content: '';
@@ -433,11 +486,9 @@ button:focus-visible {
     color: #e2e8f0;
 }
 
-
-
-/* 
+/*
 (FOOTER)
- */
+ */
 
 .rodape-avancado {
     background-color: #030712;

@@ -79,9 +79,6 @@ $badgesProjeto = [
         <ul class="sidebar-menu">
             <li class="active"><a href="dashboard.php" aria-current="page"><span class="material-symbols-outlined menu-icon">dashboard</span><span>Dashboard</span></a></li>
             <li><a href="componentes.php"><span class="material-symbols-outlined menu-icon">memory</span><span>Componentes</span></a></li>
-            <?php if (isAdmin()): ?>
-                <li><a href="adicionar_componente.php"><span class="material-symbols-outlined menu-icon">add_circle</span><span>Cadastro</span></a></li>
-            <?php endif; ?>
             <li><a href="projetos.php"><span class="material-symbols-outlined menu-icon">folder</span><span>Projetos</span></a></li>
             <li><a href="historico.php"><span class="material-symbols-outlined menu-icon">history</span><span>Histórico</span></a></li>
             <li><a href="kits.php"><span class="material-symbols-outlined menu-icon">inventory_2</span><span>Kits e Catálogos</span></a></li>
@@ -292,9 +289,9 @@ $badgesProjeto = [
 
                     <div class="atalhos-grid">
                         <?php if (isAdmin()): ?>
-                            <a href="adicionar_componente.php" class="btn-atalho primario">
+                            <a href="componentes.php" class="btn-atalho primario">
                                 <span class="material-symbols-outlined">add_circle</span>
-                                Cadastrar Peça
+                                Gerenciar Peças
                             </a>
                         <?php else: ?>
                             <a href="kits.php" class="btn-atalho primario">

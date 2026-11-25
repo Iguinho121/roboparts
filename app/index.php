@@ -140,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <?php if (!empty($mensagem)): ?>
-                <div class="alerta-moderno <?= $tipoMensagem === 'sucesso' ? 'alerta-sucesso' : 'alerta-erro' ?>" style="margin-bottom: 15px; padding: 10px; border-radius: 6px; <?= $tipoMensagem === 'sucesso' ? 'background-color: #112a18; color: #4aff71; border: 1px solid #1a5a2a;' : 'background-color: #2a1111; color: #ff4a4a; border: 1px solid #5a1a1a;' ?>">
+                <div class="alerta-moderno <?= $tipoMensagem === 'sucesso' ? 'alerta-sucesso' : 'alerta-erro' ?>" style="margin-bottom: 15px; padding: 10px 14px; border-radius: 14px; <?= $tipoMensagem === 'sucesso' ? 'background: linear-gradient(180deg, rgba(0, 217, 154, 0.24), rgba(0, 217, 154, 0.08)); color: #a7f3d0; border: 1px solid rgba(0, 217, 154, 0.50);' : 'background: linear-gradient(180deg, rgba(251, 113, 133, 0.26), rgba(251, 113, 133, 0.10)); color: #fecdd3; border: 1px solid rgba(251, 113, 133, 0.55);' ?>">
                     <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px;">
                         <?= $tipoMensagem === 'sucesso' ? 'check_circle' : 'error' ?>
                     </span>

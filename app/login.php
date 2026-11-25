@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 <!-- Mensagem de erro -->
                 <?php if (!empty($erro)): ?>
-                    <p style="color: #ff4a4a; background-color: #2a1111; padding: 10px; border-radius: 6px; margin-top: 15px; font-size: 14px; border: 1px solid #5a1a1a;">
+                    <p style="color: #fecdd3; background: linear-gradient(180deg, rgba(251, 113, 133, 0.26), rgba(251, 113, 133, 0.10)); padding: 10px 14px; border-radius: 14px; margin-top: 15px; font-size: 14px; border: 1px solid rgba(251, 113, 133, 0.55);">
                         <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 5px;">error</span>
                         <?= htmlspecialchars($erro) ?>
                     </p>
