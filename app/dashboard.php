@@ -3,6 +3,91 @@ require_once __DIR__ . '/init.php';
 require_once __DIR__ . '/auth.php';
 exigirLogin();
 
+// =========================================================================
+// PROCESSA DEVOLUÇÃO DE EMPRÉSTIMO NO PRÓPRIO DASHBOARD
+// =========================================================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'devolver_emprestimo') {
+    $movimentacaoId = (int) ($_POST['movimentacao_id'] ?? 0);
+
+    if ($movimentacaoId <= 0) {
+        $_SESSION['flash_erro'] = 'Empréstimo inválido para devolução.';
+    } else {
+        try {
+            $pdo->beginTransaction();
+
+            $stmtEmprestimo = $pdo->prepare(
+                "SELECT id, componente_id, projeto_id, quantidade, observacao
+                 FROM movimentacoes
+                 WHERE id = ? AND tipo_movimentacao = 'Emprestimo' AND devolvido = 0
+                 FOR UPDATE"
+            );
+            $stmtEmprestimo->execute([$movimentacaoId]);
+            $emprestimo = $stmtEmprestimo->fetch();
+
+            if (!$emprestimo) {
+                throw new RuntimeException('Este empréstimo não foi encontrado ou já foi devolvido.');
+            }
+
+            $stmtComp = $pdo->prepare('SELECT id, nome FROM componentes WHERE id = ? FOR UPDATE');
+            $stmtComp->execute([(int) $emprestimo['componente_id']]);
+            $componente = $stmtComp->fetch();
+
+            if (!$componente) {
+                throw new RuntimeException('O componente vinculado a este empréstimo não existe mais no inventário.');
+            }
+
+            // Marca o empréstimo original como devolvido para sair da lista de abertos
+            $stmtMarcarDevolvido = $pdo->prepare('UPDATE movimentacoes SET devolvido = 1 WHERE id = ?');
+            $stmtMarcarDevolvido->execute([(int) $emprestimo['id']]);
+
+            // Restaura a quantidade disponível no estoque
+            $qtdDevolvida = (int) $emprestimo['quantidade'];
+            $stmtEstoque = $pdo->prepare(
+                'UPDATE componentes
+                 SET quantidade_disponivel = LEAST(quantidade_total, quantidade_disponivel + ?)
+                 WHERE id = ?'
+            );
+            $stmtEstoque->execute([$qtdDevolvida, (int) $emprestimo['componente_id']]);
+
+            // Registra a devolução para aparecer no Histórico
+            $usuarioNome = $_SESSION['usuario_nome'] ?? 'Usuário';
+            $obsDevolucao = "Devolvido por: {$usuarioNome} (ref. empréstimo #{$emprestimo['id']})";
+            if (!empty($emprestimo['observacao'])) {
+                $obsDevolucao .= " — {$emprestimo['observacao']}";
+            }
+
+            $stmtHistorico = $pdo->prepare(
+                'INSERT INTO movimentacoes (componente_id, projeto_id, tipo_movimentacao, quantidade, observacao, devolvido)
+                 VALUES (?, ?, ?, ?, ?, 1)'
+            );
+            $stmtHistorico->execute([
+                (int) $emprestimo['componente_id'],
+                $emprestimo['projeto_id'] !== null ? (int) $emprestimo['projeto_id'] : null,
+                'Devolucao',
+                $qtdDevolvida,
+                $obsDevolucao,
+            ]);
+
+            $pdo->commit();
+            $_SESSION['flash_sucesso'] = "Devolução de {$qtdDevolvida}x {$componente['nome']} registrada com sucesso!";
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            $_SESSION['flash_erro'] = $e instanceof PDOException
+                ? 'Erro ao registrar devolução no banco: ' . $e->getMessage()
+                : $e->getMessage();
+        }
+    }
+
+    header('Location: dashboard.php');
+    exit;
+}
+
+$flashSucesso = $_SESSION['flash_sucesso'] ?? null;
+$flashErro = $_SESSION['flash_erro'] ?? null;
+unset($_SESSION['flash_sucesso'], $_SESSION['flash_erro']);
+
 // Busca os dados principais usando o crud.php
 $componentes = readAll($pdo, 'componentes');
 $projetos = readAll($pdo, 'projetos');
@@ -38,15 +123,22 @@ usort($movimentacoes, function ($a, $b) {
 $ultimasMovimentacoes = array_slice($movimentacoes, 0, 5);
 $projetosRecentes = array_slice($projetos, 0, 4);
 
+// Filtra empréstimos ainda em aberto (devolvido = 0) para exibição no card de devolução
+$emprestimosAbertos = array_values(array_filter($movimentacoes, function ($mov) {
+    return ($mov['tipo_movimentacao'] ?? '') === 'Emprestimo'
+        && (int) ($mov['devolvido'] ?? 0) === 0;
+}));
+
 // Mapas de cores para os badges (aceita com e sem acento)
 $badgesMov = [
-    'Entrada'    => 'badge-entrada',
-    'Saida'      => 'badge-saida',
-    'Saída'      => 'badge-saida',
-    'Emprestimo' => 'badge-emprestimo',
-    'Empréstimo' => 'badge-emprestimo',
-    'Devolucao'  => 'badge-devolucao',
-    'Devolução'  => 'badge-devolucao',
+    'Entrada'         => 'badge-entrada',
+    'Saida'           => 'badge-saida',
+    'Saída'           => 'badge-saida',
+    'Emprestimo'      => 'badge-emprestimo',
+    'Empréstimo'      => 'badge-emprestimo',
+    'Kit Requisitado' => 'badge-emprestimo',
+    'Devolucao'       => 'badge-devolucao',
+    'Devolução'       => 'badge-devolucao',
 ];
 
 $badgesProjeto = [
@@ -65,6 +157,70 @@ $badgesProjeto = [
     <title>Dashboard | RoboParts</title>
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..400,0..1,0">
+    <style>
+        .alerta-dashboard {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            margin-bottom: 18px;
+            font-size: 0.92rem;
+            font-weight: 500;
+            backdrop-filter: blur(12px);
+        }
+        .alerta-dashboard.sucesso {
+            background: rgba(34, 197, 94, 0.16);
+            border: 1px solid rgba(34, 197, 94, 0.38);
+            color: #86efac;
+        }
+        .alerta-dashboard.erro {
+            background: rgba(239, 68, 68, 0.16);
+            border: 1px solid rgba(239, 68, 68, 0.38);
+            color: #fca5a5;
+        }
+        .lista-emprestimos-abertos {
+            max-height: 340px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .item-emprestimo-aberto {
+            gap: 12px;
+        }
+        .item-emprestimo-aberto .emp-detalhes {
+            min-width: 0;
+            flex: 1;
+        }
+        .item-emprestimo-aberto .emp-detalhes strong,
+        .item-emprestimo-aberto .emp-detalhes small {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .btn-devolver-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            background: rgba(56, 189, 248, 0.16);
+            color: inherit;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s ease, transform 0.15s ease;
+        }
+        .btn-devolver-item:hover {
+            background: rgba(56, 189, 248, 0.3);
+            transform: translateY(-1px);
+        }
+        .btn-devolver-item .material-symbols-outlined {
+            font-size: 16px;
+        }
+    </style>
 </head>
 
 <body>
@@ -98,6 +254,20 @@ $badgesProjeto = [
                 <p class="descricao">Visão geral do inventário, projetos e movimentações do laboratório.</p>
             </div>
         </header>
+
+        <?php if ($flashSucesso): ?>
+            <div class="alerta-dashboard sucesso" role="status">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span><?= htmlspecialchars($flashSucesso) ?></span>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($flashErro): ?>
+            <div class="alerta-dashboard erro" role="alert">
+                <span class="material-symbols-outlined">error</span>
+                <span><?= htmlspecialchars($flashErro) ?></span>
+            </div>
+        <?php endif; ?>
 
         <!-- Cards de Resumo (KPIs) -->
         <section class="resumo" <?= !isAdmin() ? 'style="grid-template-columns: repeat(3, minmax(0, 1fr));"' : '' ?>>
@@ -223,7 +393,7 @@ $badgesProjeto = [
                 </section>
             </div>
 
-            <!-- Coluna Lateral: Alertas e Atalhos -->
+            <!-- Coluna Lateral: Alertas e Empréstimos para Devolução -->
             <div class="coluna-lateral">
                 <?php if (isAdmin()): ?>
                     <section class="painel">
@@ -280,31 +450,51 @@ $badgesProjeto = [
                     </section>
                 <?php endif; ?>
 
-                <!-- Ações Rápidas -->
+                <!-- Empréstimos em Aberto (Devolução) -->
                 <section class="painel">
-                    <div class="titulo-painel">
-                        <h2>Ações rápidas</h2>
-                        <p>Atalhos diretos do sistema.</p>
+                    <div class="titulo-painel titulo-lista">
+                        <div>
+                            <h2>Empréstimos em aberto</h2>
+                            <p>Itens retirados pendentes de devolução.</p>
+                        </div>
+                        <span class="contador"><?= count($emprestimosAbertos) ?> ativo(s)</span>
                     </div>
 
-                    <div class="atalhos-grid">
-                        <?php if (isAdmin()): ?>
-                            <a href="componentes.php" class="btn-atalho primario">
-                                <span class="material-symbols-outlined">add_circle</span>
-                                Gerenciar Peças
-                            </a>
-                        <?php else: ?>
-                            <a href="kits.php" class="btn-atalho primario">
-                                <span class="material-symbols-outlined">inventory_2</span>
-                                Requisitar Kit
-                            </a>
-                        <?php endif; ?>
+                    <?php if (count($emprestimosAbertos) === 0): ?>
+                        <div class="mensagem-vazia">
+                            <p>Nenhum empréstimo pendente de devolução.</p>
+                        </div>
+                    <?php else: ?>
+                        <ul class="lista-alertas lista-emprestimos-abertos">
+                            <?php foreach ($emprestimosAbertos as $emp):
+                                $compEmp = read($pdo, 'componentes', 'id = ?', [$emp['componente_id']]);
+                                $nomeCompEmp = $compEmp['nome'] ?? 'Componente #' . (int) $emp['componente_id'];
+                                $qtdEmp = (int) $emp['quantidade'];
+                                $dataEmp = date('d/m/Y H:i', strtotime($emp['data_movimentacao']));
+                            ?>
+                                <li class="item-emprestimo-aberto">
+                                    <div class="emp-detalhes">
+                                        <strong title="<?= htmlspecialchars($nomeCompEmp) ?>">
+                                            <?= $qtdEmp ?>x <?= htmlspecialchars($nomeCompEmp) ?>
+                                        </strong>
+                                        <small title="<?= htmlspecialchars(($emp['observacao'] ?? '') . ' • ' . $dataEmp) ?>">
+                                            <?= $dataEmp ?><?= !empty($emp['observacao']) ? ' • ' . htmlspecialchars($emp['observacao']) : '' ?>
+                                        </small>
+                                    </div>
 
-                        <a href="componentes.php" class="btn-atalho">
-                            <span class="material-symbols-outlined">search</span>
-                            Consultar Estoque
-                        </a>
-                    </div>
+                                    <form method="POST" action="dashboard.php"
+                                          onsubmit="return confirm('Confirmar a devolução de <?= $qtdEmp ?>x <?= htmlspecialchars(addslashes($nomeCompEmp), ENT_QUOTES) ?>?');">
+                                        <input type="hidden" name="acao" value="devolver_emprestimo">
+                                        <input type="hidden" name="movimentacao_id" value="<?= (int) $emp['id'] ?>">
+                                        <button type="submit" class="btn-devolver-item">
+                                            <span class="material-symbols-outlined">assignment_return</span>
+                                            Devolver
+                                        </button>
+                                    </form>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
                 </section>
             </div>
         </section>
