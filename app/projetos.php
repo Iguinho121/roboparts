@@ -183,7 +183,6 @@ $h = static fn($valor): string => htmlspecialchars((string) ($valor ?? ''), ENT_
       <li><a href="dashboard.php"><span class="material-symbols-outlined menu-icon">dashboard</span><span>Dashboard</span></a></li>
       <li><a href="componentes.php"><span class="material-symbols-outlined menu-icon">memory</span><span>Componentes</span></a></li>
       <?php if (isAdmin()): ?>
-        <li><a href="adicionar_componente.php"><span class="material-symbols-outlined menu-icon">add_circle</span><span>Cadastro</span></a></li>
       <?php endif; ?>
       <li class="active"><a href="projetos.php" aria-current="page"><span class="material-symbols-outlined menu-icon">folder</span><span>Projetos</span></a></li>
       <li><a href="historico.php"><span class="material-symbols-outlined menu-icon">history</span><span>Histórico</span></a></li>
