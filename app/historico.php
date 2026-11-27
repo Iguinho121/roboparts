@@ -1,5 +1,6 @@
 <?php
 // Historico de movimentacoes do Flux.
+require_once __DIR__ . '/init.php';
 require_once __DIR__ . '/auth.php';
 exigirLogin();
 
@@ -118,6 +119,7 @@ $h = static fn($valor): string => htmlspecialchars((string) ($valor ?? ''), ENT_
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -127,8 +129,10 @@ $h = static fn($valor): string => htmlspecialchars((string) ($valor ?? ''), ENT_
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
   <link rel="stylesheet" href="css/historico.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..400,0..1,0">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..400,0..1,0">
 </head>
+
 <body>
   <nav class="sidebar" id="glassSidebar" aria-label="Navegação principal">
     <div class="sidebar-glass-sheen" aria-hidden="true"></div>
@@ -139,11 +143,16 @@ $h = static fn($valor): string => htmlspecialchars((string) ($valor ?? ''), ENT_
     </a>
 
     <ul class="sidebar-menu">
-      <li><a href="dashboard.php"><span class="material-symbols-outlined menu-icon">dashboard</span><span>Dashboard</span></a></li>
-      <li><a href="componentes.php"><span class="material-symbols-outlined menu-icon">memory</span><span>Componentes</span></a></li>
-      <li><a href="projetos.php"><span class="material-symbols-outlined menu-icon">folder</span><span>Projetos</span></a></li>
-      <li class="active"><a href="historico.php" aria-current="page"><span class="material-symbols-outlined menu-icon">history</span><span>Histórico</span></a></li>
-      <li><a href="kits.php"><span class="material-symbols-outlined menu-icon">inventory_2</span><span>Kits e Catálogos</span></a></li>
+      <li><a href="dashboard.php"><span
+            class="material-symbols-outlined menu-icon">dashboard</span><span>Dashboard</span></a></li>
+      <li><a href="componentes.php"><span
+            class="material-symbols-outlined menu-icon">memory</span><span>Componentes</span></a></li>
+      <li><a href="projetos.php"><span
+            class="material-symbols-outlined menu-icon">folder</span><span>Projetos</span></a></li>
+      <li class="active"><a href="historico.php" aria-current="page"><span
+            class="material-symbols-outlined menu-icon">history</span><span>Histórico</span></a></li>
+      <li><a href="kits.php"><span class="material-symbols-outlined menu-icon">inventory_2</span><span>Kits e
+            Catálogos</span></a></li>
     </ul>
 
     <a class="sidebar-logout" href="logout.php" aria-label="Sair do sistema">
@@ -236,7 +245,7 @@ $h = static fn($valor): string => htmlspecialchars((string) ($valor ?? ''), ENT_
         <div class="lista-movimentacoes">
           <?php foreach ($movimentacoes as $movimentacao):
             $tipoAtual = $tiposExibicao[$movimentacao['tipo_movimentacao']] ?? ['nome' => $movimentacao['tipo_movimentacao'], 'classe' => 'saida'];
-          ?>
+            ?>
             <article class="movimentacao-bolha">
               <div class="bolha-topo">
                 <div class="bolha-componente">
@@ -256,7 +265,14 @@ $h = static fn($valor): string => htmlspecialchars((string) ($valor ?? ''), ENT_
                   </span>
                   <time class="bolha-data">
                     <span class="material-symbols-outlined">schedule</span>
-                    <?= $h(date('d/m/Y H:i', strtotime($movimentacao['data_movimentacao']))) ?>
+                    <?php
+                    $data = new DateTimeImmutable(
+                      $movimentacao['data_movimentacao'],
+                      new DateTimeZone('America/Sao_Paulo')
+                    );
+                    ?>
+
+                    <?= $h($data->format('d/m/Y H:i')) ?>
                   </time>
                 </div>
               </div>
@@ -370,4 +386,5 @@ $h = static fn($valor): string => htmlspecialchars((string) ($valor ?? ''), ENT_
   </script>
   <!-- ⚠️ FIM JAVASCRIPT 2 -->
 </body>
+
 </html>

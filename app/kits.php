@@ -193,8 +193,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao'])) {
                     $stmtMov = $pdo->prepare(
                         'INSERT INTO movimentacoes (componente_id, projeto_id, tipo_movimentacao, quantidade, observacao) VALUES (?, ?, ?, ?, ?)'
                     );
-                    $stmtMov->execute([$primeiroCompId, null, 'Saida', $totalUnidadesKit, $obsMov]);
 
+                    $stmtMov->execute([$primeiroCompId, null, 'Kit Requisitado', $totalUnidadesKit, $obsMov]);
+                    
                     $pdo->commit();
                     $_SESSION['flash_sucesso'] = "Kit '{$kit['nome']}' requisitado com sucesso! Estoque atualizado e registrado no histórico.";
                 }

@@ -174,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p>Organização inteligente para oficinas de robótica. Feito para equipes e makers que querem controle
                     total de suas peças e projetos, sem surpresas.</p>
                 <a href="#" class="rodape-comunidade">
-                    <span class="material-symbols-outlined">forum</span> Nossa Comunidade
+                    <span class="material-symbols-outlined">forum</span> Nossa Comunidade - G.Britto
                 </a>
             </div>
 
