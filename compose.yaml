@@ -22,7 +22,6 @@ services:
       context: .
       dockerfile: docker/mysql/Dockerfile
     environment:
-      TZ: America/Sao_Paulo
       MYSQL_DATABASE: ${DB_DATABASE:-integrador}
       MYSQL_USER: ${DB_USERNAME:-integrador}
       MYSQL_PASSWORD: ${DB_PASSWORD:?Informe DB_PASSWORD}
